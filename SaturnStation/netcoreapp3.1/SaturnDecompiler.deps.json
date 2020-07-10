@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "SaturnDecompiler/1.0.0": {
+        "dependencies": {
+          "Saturn": "1.0.0"
+        },
+        "runtime": {
+          "SaturnDecompiler.dll": {}
+        }
+      },
+      "Saturn/1.0.0": {
+        "runtime": {
+          "Saturn.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SaturnDecompiler/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Saturn/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

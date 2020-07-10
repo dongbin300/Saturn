@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>D:\프로젝트\CS\Program\Saturn\SaturnStation\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="PE\Format\**" />
+    <EmbeddedResource Remove="PE\Format\**" />
+    <None Remove="PE\Format\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Build\PEFile.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Build\Compile\" />
+    <Folder Include="Build\Link\" />
+    <Folder Include="Build\Preprocess\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>D:\프로젝트\CS\Program\Saturn\SaturnStation\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Saturn\Saturn.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SimplePerformanceChecker">
+      <HintPath>bin\Debug\netcoreapp3.1\SimplePerformanceChecker.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

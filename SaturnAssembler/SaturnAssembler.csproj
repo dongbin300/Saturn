@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>D:\프로젝트\CS\Program\Saturn\SaturnStation\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Saturn\Saturn.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SyntaxHighlighter">
+      <HintPath>..\PETest\bin\Debug\netcoreapp3.1\SyntaxHighlighter.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

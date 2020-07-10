@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "SaturnBuilder/1.0.0": {
+        "dependencies": {
+          "Saturn": "1.0.0"
+        },
+        "runtime": {
+          "SaturnBuilder.dll": {}
+        }
+      },
+      "Saturn/1.0.0": {
+        "runtime": {
+          "Saturn.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SaturnBuilder/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Saturn/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

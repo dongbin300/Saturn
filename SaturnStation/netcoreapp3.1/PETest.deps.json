@@ -1,0 +1,50 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "PETest/1.0.0": {
+        "dependencies": {
+          "Saturn": "1.0.0",
+          "SimplePerformanceChecker": "1.0.0.0"
+        },
+        "runtime": {
+          "PETest.dll": {}
+        }
+      },
+      "Saturn/1.0.0": {
+        "runtime": {
+          "Saturn.dll": {}
+        }
+      },
+      "SimplePerformanceChecker/1.0.0.0": {
+        "runtime": {
+          "SimplePerformanceChecker.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PETest/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Saturn/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SimplePerformanceChecker/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
