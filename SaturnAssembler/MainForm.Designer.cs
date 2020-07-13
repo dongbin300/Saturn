@@ -119,7 +119,7 @@
             this.Controls.Add(this.title);
             this.Controls.Add(this.assembleButton);
             this.Name = "MainForm";
-            this.Text = "MainForm";
+            this.Text = "Saturn Assembler";
             this.ResumeLayout(false);
             this.PerformLayout();
 

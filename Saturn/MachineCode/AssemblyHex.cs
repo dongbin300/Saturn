@@ -6,8 +6,15 @@ using static Saturn.Util;
 
 namespace Saturn.MachineCode
 {
-    public class Binary
+    public class AssemblyHex
     {
+        [Flags]
+        public enum TemporaryState
+        {
+            None,
+            Jump
+        }
+
         /// <summary>
         /// Flexible size
         /// Max 4 Bytes
@@ -28,13 +35,7 @@ namespace Saturn.MachineCode
 
         public string String => ToString();
         public byte[] Bytes => ToBytes();
-
-        //public Binary(byte[] opcodeBytes, byte[] operand1Bytes = null, byte[] operand2Bytes = null)
-        //{
-        //    Opcode = opcodeBytes;
-        //    Operand1 = operand1Bytes;
-        //    Operand2 = operand2Bytes;
-        //}
+        public TemporaryState TempState { get; set; }
 
         /// <summary>
         /// If opcode starts with 0x00 byte, must set opcodeSize
@@ -43,7 +44,7 @@ namespace Saturn.MachineCode
         /// <param name="operand1"></param>
         /// <param name="operand2"></param>
         /// <param name="opcodeSize"></param>
-        public Binary(object opcode, object operand1 = null, object operand2 = null, int opcodeSize = 0)
+        public AssemblyHex(object opcode, object operand1 = null, object operand2 = null, int opcodeSize = 0)
         {
             Opcode = opcodeSize != 0 ?
                  opcode switch
@@ -107,15 +108,18 @@ namespace Saturn.MachineCode
                     _ => null
                 }
             };
+
+            TempState = TemporaryState.None;
         }
 
-
-        //public Binary(string opcodeString, string operand1String = null, string operand2String = null)
-        //{
-        //    Opcode = HexStringToBytes(opcodeString);
-        //    Operand1 = operand1String == null ? null : HexStringToBytes(operand1String);
-        //    Operand2 = operand2String == null ? null : HexStringToBytes(operand2String);
-        //}
+        /// <summary>
+        /// Set the incomprehensible assembly to a temporary state
+        /// </summary>
+        /// <param name="state"></param>
+        public AssemblyHex(TemporaryState state, string operand1)
+        {
+            TempState = state;
+        }
 
         new string ToString()
         {

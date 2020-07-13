@@ -21,8 +21,9 @@ namespace Saturn.Assembly
         public OpcodeType Opcode { get; set; }
         public object Operand1 { get; set; }
         public object Operand2 { get; set; }
-        public Binary MachineCode => ToMachineCode();
-        public Binary MachineCodeTest => ToMachineCodeTest();
+        public uint Address { get; set; }
+        public AssemblyHex MachineCode => ToMachineCode();
+        public AssemblyHex MachineCodeTest => ToMachineCodeTest();
         public string String => ToString();
 
         /// <summary>
@@ -33,11 +34,12 @@ namespace Saturn.Assembly
         /// <param name="opcode"></param>
         /// <param name="operand1"></param>
         /// <param name="operand2"></param>
-        public Instruction(OpcodeType opcode, object operand1 = null, object operand2 = null)
+        public Instruction(OpcodeType opcode, object operand1 = null, object operand2 = null, uint address = 0x00)
         {
             Opcode = opcode;
             Operand1 = operand1;
             Operand2 = operand2;
+            Address = address;
 
             try
             {
@@ -112,18 +114,18 @@ namespace Saturn.Assembly
             };
         }
 
-        private Binary ToMachineCode()
+        private AssemblyHex ToMachineCode()
         {
             return Opcode switch
             {
                 #region AAA
-                OpcodeType.AAA => new Binary(0x37),
+                OpcodeType.AAA => new AssemblyHex(0x37),
                 #endregion
 
                 #region AAD
                 OpcodeType.AAD => Operand1 switch
                 {
-                    byte x => new Binary(0xD5, x),
+                    byte x => new AssemblyHex(0xD5, x),
                     _ => null
                 },
                 #endregion
@@ -131,13 +133,13 @@ namespace Saturn.Assembly
                 #region AAM
                 OpcodeType.AAM => Operand1 switch
                 {
-                    byte x => new Binary(0xD4, x),
+                    byte x => new AssemblyHex(0xD4, x),
                     _ => null
                 },
                 #endregion
 
                 #region AAS
-                OpcodeType.AAS => new Binary(0x3F),
+                OpcodeType.AAS => new AssemblyHex(0x3F),
                 #endregion
 
                 #region ADC
@@ -145,52 +147,52 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8010), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x1000)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8010), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x1000)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8310), x), // TODO: 무조건 x는 uint로 파싱되기 때문에 타지 않음
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8110), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x1100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8310), x), // TODO: 무조건 x는 uint로 파싱되기 때문에 타지 않음
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8110), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x1100)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
-                        DataType.BYTE => new Binary(0x8015, x.Value, (byte)Operand2),
-                        DataType.WORD => new Binary(0x668115, x.Value, (ushort)Operand2),
-                        DataType.DWORD => new Binary(0x8115, x.Value, (uint)Operand2),
+                        DataType.BYTE => new AssemblyHex(0x8015, x.Value, (byte)Operand2),
+                        DataType.WORD => new AssemblyHex(0x668115, x.Value, (ushort)Operand2),
+                        DataType.DWORD => new AssemblyHex(0x8115, x.Value, (uint)Operand2),
                         _ => null
                     },
                     R8 _ => Operand1 switch
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x14, x),
+                            byte x => new AssemblyHex(0x14, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x1245, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x1200))
+                                PTR8.EBP => new AssemblyHex(0x1245, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x1200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x1205, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x1205, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80D0), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80D0), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x1245), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x1200))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1245), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x1200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x1205), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1205), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -200,30 +202,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x6615, x),
+                            ushort x => new AssemblyHex(0x6615, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x661345, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x661300))
+                                PTR16.EBP => new AssemblyHex(0x661345, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x661300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x661305, x.Value),
+                                DataType.WORD => new AssemblyHex(0x661305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681D0), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681D0), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x661345), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x661300))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661345), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x661300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x661305), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -233,30 +235,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0x15, x),
+                            uint x => new AssemblyHex(0x15, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x1345, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x1300))
+                                PTR32.EBP => new AssemblyHex(0x1345, (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x1300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x1305, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x1305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81D0), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81D0), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x1345), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x1300))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1345), (byte)0x00), // TODO: ebp뒤에 +C8 들어감
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x1300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x1305), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -271,41 +273,41 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8000), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x0000), null, null, 2),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8000), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x0000), null, null, 2),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668300), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668100), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x660100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668300), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668100), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x660100)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8300), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8100), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x0100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8300), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8100), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x0100)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
                         DataType.BYTE => Operand2 switch
                         {
-                            byte y => new Binary(0x8005, x.Value, y),
+                            byte y => new AssemblyHex(0x8005, x.Value, y),
                             _ => null
                         },
                         DataType.WORD => Operand2 switch
                         {
-                            byte y => new Binary(0x668305, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
-                            ushort y => new Binary(0x668105, x.Value, y),
+                            byte y => new AssemblyHex(0x668305, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
+                            ushort y => new AssemblyHex(0x668105, x.Value, y),
                             _ => null
                         },
                         DataType.DWORD => Operand2 switch
                         {
-                            byte y => new Binary(0x8305, x.Value, y),
-                            uint y => new Binary(0x8105, x.Value, y),
+                            byte y => new AssemblyHex(0x8305, x.Value, y),
+                            uint y => new AssemblyHex(0x8105, x.Value, y),
                             _ => null
                         },
                         _ => null
@@ -314,30 +316,30 @@ namespace Saturn.Assembly
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x04, x),
+                            byte x => new AssemblyHex(0x04, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x0245, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x0200))
+                                PTR8.EBP => new AssemblyHex(0x0245, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x0200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x0205, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x0205, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80C0), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80C0), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x0245), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0200))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0245), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x0205), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0205), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -347,30 +349,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x6605, x),
+                            ushort x => new AssemblyHex(0x6605, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x660345, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x660300))
+                                PTR16.EBP => new AssemblyHex(0x660345, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x660300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x660305, x.Value),
+                                DataType.WORD => new AssemblyHex(0x660305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681C0), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681C0), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x660345), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x660300))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x660345), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x660300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x660305), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x660305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -380,30 +382,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0x05, x),
+                            uint x => new AssemblyHex(0x05, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x0345, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x0300))
+                                PTR32.EBP => new AssemblyHex(0x0345, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x0300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x0305, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x0305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81C0), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81C0), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x0345), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0300))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0345), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x0305), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -422,51 +424,51 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8020), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x2000)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8020), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x2000)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668320), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668120), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x662100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668320), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668120), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x662100)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8320), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8120), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x2100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8320), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8120), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x2100)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
-                        DataType.BYTE => new Binary(0x8025, x.Value, (byte)Operand2),
-                        DataType.WORD => new Binary(0x668125, x.Value, (ushort)Operand2),
-                        DataType.DWORD => new Binary(0x8125, x.Value, (uint)Operand2),
+                        DataType.BYTE => new AssemblyHex(0x8025, x.Value, (byte)Operand2),
+                        DataType.WORD => new AssemblyHex(0x668125, x.Value, (ushort)Operand2),
+                        DataType.DWORD => new AssemblyHex(0x8125, x.Value, (uint)Operand2),
                         _ => null
                     },
                     R8 _ => Operand1 switch
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x24, x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2200)),
+                            byte x => new AssemblyHex(0x24, x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2200)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x2205, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x2205, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80E0), x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2200)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80E0), x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2200)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x2205), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2205), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -476,24 +478,24 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            byte x => new Binary(0x6683E0, x),
-                            ushort x => new Binary(0x6625, x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x662300)),
+                            byte x => new AssemblyHex(0x6683E0, x),
+                            ushort x => new AssemblyHex(0x6625, x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x662300)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x662305, x.Value),
+                                DataType.WORD => new AssemblyHex(0x662305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x6683E0), x),
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681E0), x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x662300)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x6683E0), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681E0), x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x662300)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x662305), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x662305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -503,24 +505,24 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            byte x => new Binary(0x83E0, x),
-                            uint x => new Binary(0x25, x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2300)),
+                            byte x => new AssemblyHex(0x83E0, x),
+                            uint x => new AssemblyHex(0x25, x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2300)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x2305, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x2305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x83E0), x),
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81E0), x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2300)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x83E0), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81E0), x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2300)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x2305), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -535,7 +537,7 @@ namespace Saturn.Assembly
                 {
                     PTR16 _ => Operand2 switch
                     {
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x6300)),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6300)),
                         _ => null
                     },
                     _ => null
@@ -545,29 +547,29 @@ namespace Saturn.Assembly
                 #region CALL
                 OpcodeType.CALL => Operand1 switch
                 {
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xFF10)),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF10)),
                     _ => null
                 },
                 #endregion
 
                 #region CDQ
-                OpcodeType.CDQ => new Binary(0x99),
+                OpcodeType.CDQ => new AssemblyHex(0x99),
                 #endregion
 
                 #region CLC
-                OpcodeType.CLC => new Binary(0xF8),
+                OpcodeType.CLC => new AssemblyHex(0xF8),
                 #endregion
 
                 #region CLD
-                OpcodeType.CLD => new Binary(0xFC),
+                OpcodeType.CLD => new AssemblyHex(0xFC),
                 #endregion
 
                 #region CLI
-                OpcodeType.CLI => new Binary(0xFA),
+                OpcodeType.CLI => new AssemblyHex(0xFA),
                 #endregion
 
                 #region CMC
-                OpcodeType.CMC => new Binary(0xF5),
+                OpcodeType.CMC => new AssemblyHex(0xF5),
                 #endregion
 
                 #region CMP
@@ -575,51 +577,51 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8038), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x3800)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8038), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x3800)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668338), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668138), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x663900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668338), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668138), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x663900)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8338), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8138), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x3900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8338), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8138), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x3900)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
-                        DataType.BYTE => new Binary(0x803D, x.Value, (byte)Operand2),
-                        DataType.WORD => new Binary(0x66813D, x.Value, (ushort)Operand2),
-                        DataType.DWORD => new Binary(0x813D, x.Value, (uint)Operand2),
+                        DataType.BYTE => new AssemblyHex(0x803D, x.Value, (byte)Operand2),
+                        DataType.WORD => new AssemblyHex(0x66813D, x.Value, (ushort)Operand2),
+                        DataType.DWORD => new AssemblyHex(0x813D, x.Value, (uint)Operand2),
                         _ => null
                     },
                     R8 _ => Operand1 switch
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x3C, x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3A00)),
+                            byte x => new AssemblyHex(0x3C, x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3A00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x3A05, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x3A05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80F8), x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3A00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80F8), x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3A00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x3A05), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3A05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -629,24 +631,24 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            byte x => new Binary(0x6683F8, x),
-                            ushort x => new Binary(0x663D, x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x663B00)),
+                            byte x => new AssemblyHex(0x6683F8, x),
+                            ushort x => new AssemblyHex(0x663D, x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x663B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x663B05, x.Value),
+                                DataType.WORD => new AssemblyHex(0x663B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x6683F8), x),
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681F8), x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x663B00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x6683F8), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681F8), x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x663B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x663B05), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x663B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -656,24 +658,24 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            byte x => new Binary(0x83F8, x),
-                            uint x => new Binary(0x3D, x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3B00)),
+                            byte x => new AssemblyHex(0x83F8, x),
+                            uint x => new AssemblyHex(0x3D, x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x3B05, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x3B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x83F8), x),
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81F8), x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3B00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x83F8), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81F8), x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x3B05), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -686,26 +688,26 @@ namespace Saturn.Assembly
                 #region CMPS
                 OpcodeType.CMPS => Operand1 switch
                 {
-                    PTR8 _ => new Binary(0xA6),
-                    PTR32 _ => new Binary(0xA7),
+                    PTR8 _ => new AssemblyHex(0xA6),
+                    PTR32 _ => new AssemblyHex(0xA7),
                     _ => null
                 },
                 #endregion
 
                 #region CS
-                OpcodeType.CS => new Binary(0x2E),
+                OpcodeType.CS => new AssemblyHex(0x2E),
                 #endregion
 
                 #region CWDE
-                OpcodeType.CWDE => new Binary(0x98),
+                OpcodeType.CWDE => new AssemblyHex(0x98),
                 #endregion
 
                 #region DAA
-                OpcodeType.DAA => new Binary(0x27),
+                OpcodeType.DAA => new AssemblyHex(0x27),
                 #endregion
 
                 #region DAS
-                OpcodeType.DAS => new Binary(0x2F),
+                OpcodeType.DAS => new AssemblyHex(0x2F),
                 #endregion
 
                 #region DATA16
@@ -715,9 +717,9 @@ namespace Saturn.Assembly
                 #region DEC
                 OpcodeType.DEC => Operand1 switch
                 {
-                    PTR8 _ => new Binary(Formalize(CodeFormat.One, 0xFE08)),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xFF08)),
-                    R32 _ => new Binary(Formalize(CodeFormat.One, 0x48)),
+                    PTR8 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFE08)),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF08)),
+                    R32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0x48)),
                     _ => null
                 },
                 #endregion
@@ -725,8 +727,8 @@ namespace Saturn.Assembly
                 #region DIV
                 OpcodeType.DIV => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF735, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF730)),
+                    PTRC x => new AssemblyHex(0xF735, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF730)),
                     _ => null
                 },
                 #endregion
@@ -744,7 +746,7 @@ namespace Saturn.Assembly
                 #endregion
 
                 #region FWAIT
-                OpcodeType.FWAIT => new Binary(0x9B),
+                OpcodeType.FWAIT => new AssemblyHex(0x9B),
                 #endregion
 
                 #region GS
@@ -752,19 +754,19 @@ namespace Saturn.Assembly
                 #endregion
 
                 #region HLT
-                OpcodeType.HLT => new Binary(0xF4),
+                OpcodeType.HLT => new AssemblyHex(0xF4),
                 #endregion
 
                 #region ICEBP / INT1
-                OpcodeType.ICEBP => new Binary(0xF1),
-                OpcodeType.INT1 => new Binary(0xF1),
+                OpcodeType.ICEBP => new AssemblyHex(0xF1),
+                OpcodeType.INT1 => new AssemblyHex(0xF1),
                 #endregion
 
                 #region IDIV
                 OpcodeType.IDIV => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF73D, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF738)),
+                    PTRC x => new AssemblyHex(0xF73D, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF738)),
                     _ => null
                 },
                 #endregion
@@ -772,8 +774,8 @@ namespace Saturn.Assembly
                 #region IMUL
                 OpcodeType.IMUL => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF72D, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF728)),
+                    PTRC x => new AssemblyHex(0xF72D, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF728)),
                     _ => null
                 },
                 #endregion
@@ -783,14 +785,14 @@ namespace Saturn.Assembly
                 {
                     R8.AL => Operand2 switch
                     {
-                        byte x => new Binary(0xE4, x),
-                        R16.DX => new Binary(0xEC),
+                        byte x => new AssemblyHex(0xE4, x),
+                        R16.DX => new AssemblyHex(0xEC),
                         _ => null
                     },
                     R32.EAX => Operand2 switch
                     {
-                        byte x => new Binary(0xE5, x),
-                        R16.DX => new Binary(0xED),
+                        byte x => new AssemblyHex(0xE5, x),
+                        R16.DX => new AssemblyHex(0xED),
                         _ => null
                     },
                     _ => null
@@ -800,9 +802,9 @@ namespace Saturn.Assembly
                 #region INC
                 OpcodeType.INC => Operand1 switch
                 {
-                    PTR8 _ => new Binary(Formalize(CodeFormat.One, 0xFE00)),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xFF00)),
-                    R32 _ => new Binary(Formalize(CodeFormat.One, 0x40)),
+                    PTR8 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFE00)),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF00)),
+                    R32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0x40)),
                     _ => null
                 },
                 #endregion
@@ -812,45 +814,45 @@ namespace Saturn.Assembly
                 {
                     PTR8.EDI => Operand2 switch
                     {
-                        R16.DX => new Binary(0x6C),
+                        R16.DX => new AssemblyHex(0x6C),
                         _ => null
                     },
                     PTR32.EDI => Operand2 switch
                     {
-                        R16.DX => new Binary(0x6D),
+                        R16.DX => new AssemblyHex(0x6D),
                         _ => null
                     },
                     _ => null
                 },
-                OpcodeType.INSB => new Binary(0x6C),
-                OpcodeType.INSD => new Binary(0x6D),
+                OpcodeType.INSB => new AssemblyHex(0x6C),
+                OpcodeType.INSD => new AssemblyHex(0x6D),
                 #endregion
 
                 #region INT
                 OpcodeType.INT => Operand1 switch
                 {
-                    byte x => new Binary(0xCD, x),
+                    byte x => new AssemblyHex(0xCD, x),
                     _ => null
                 },
                 #endregion
 
                 #region INT3
-                OpcodeType.INT3 => new Binary(0xCC),
+                OpcodeType.INT3 => new AssemblyHex(0xCC),
                 #endregion
 
                 #region INTO
-                OpcodeType.INTO => new Binary(0xCE),
+                OpcodeType.INTO => new AssemblyHex(0xCE),
                 #endregion
 
                 #region IRET / IRETD
-                OpcodeType.IRET => new Binary(0xCF),
-                OpcodeType.IRETD => new Binary(0xCF),
+                OpcodeType.IRET => new AssemblyHex(0xCF),
+                OpcodeType.IRETD => new AssemblyHex(0xCF),
                 #endregion
 
                 #region JA
                 OpcodeType.JA => Operand1 switch
                 {
-                    byte x => new Binary(0x77, x),
+                    byte x => new AssemblyHex(0x77, x),
                     _ => null
                 },
                 #endregion
@@ -858,7 +860,7 @@ namespace Saturn.Assembly
                 #region JAE
                 OpcodeType.JAE => Operand1 switch
                 {
-                    byte x => new Binary(0x73, x),
+                    byte x => new AssemblyHex(0x73, x),
                     _ => null
                 },
                 #endregion
@@ -866,7 +868,7 @@ namespace Saturn.Assembly
                 #region JB
                 OpcodeType.JB => Operand1 switch
                 {
-                    byte x => new Binary(0x72, x),
+                    byte x => new AssemblyHex(0x72, x),
                     _ => null
                 },
                 #endregion
@@ -874,7 +876,7 @@ namespace Saturn.Assembly
                 #region JBE
                 OpcodeType.JBE => Operand1 switch
                 {
-                    byte x => new Binary(0x76, x),
+                    byte x => new AssemblyHex(0x76, x),
                     _ => null
                 },
                 #endregion
@@ -882,7 +884,7 @@ namespace Saturn.Assembly
                 #region JE
                 OpcodeType.JE => Operand1 switch
                 {
-                    byte x => new Binary(0x74, x),
+                    byte x => new AssemblyHex(0x74, x),
                     _ => null
                 },
                 #endregion
@@ -890,7 +892,7 @@ namespace Saturn.Assembly
                 #region JECXZ
                 OpcodeType.JECXZ => Operand1 switch
                 {
-                    byte x => new Binary(0xE3, x),
+                    byte x => new AssemblyHex(0xE3, x),
                     _ => null
                 },
                 #endregion
@@ -898,7 +900,7 @@ namespace Saturn.Assembly
                 #region JG
                 OpcodeType.JG => Operand1 switch
                 {
-                    byte x => new Binary(0x7F, x),
+                    byte x => new AssemblyHex(0x7F, x),
                     _ => null
                 },
                 #endregion
@@ -906,7 +908,7 @@ namespace Saturn.Assembly
                 #region JGE
                 OpcodeType.JGE => Operand1 switch
                 {
-                    byte x => new Binary(0x7D, x),
+                    byte x => new AssemblyHex(0x7D, x),
                     _ => null
                 },
                 #endregion
@@ -914,7 +916,7 @@ namespace Saturn.Assembly
                 #region JL
                 OpcodeType.JL => Operand1 switch
                 {
-                    byte x => new Binary(0x7C, x),
+                    byte x => new AssemblyHex(0x7C, x),
                     _ => null
                 },
                 #endregion
@@ -922,7 +924,7 @@ namespace Saturn.Assembly
                 #region JLE
                 OpcodeType.JLE => Operand1 switch
                 {
-                    byte x => new Binary(0x7E, x),
+                    byte x => new AssemblyHex(0x7E, x),
                     _ => null
                 },
                 #endregion
@@ -930,9 +932,9 @@ namespace Saturn.Assembly
                 #region JMP
                 OpcodeType.JMP => Operand1 switch
                 {
-                    byte x => new Binary(0xEB, x),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xFF20)),
-                    PTR48 _ => new Binary(Formalize(CodeFormat.One, 0xFF28)),
+                    byte x => new AssemblyHex(0xEB, x),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF20)),
+                    PTR48 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF28)),
                     _ => null
                 },
                 #endregion
@@ -940,7 +942,7 @@ namespace Saturn.Assembly
                 #region JNE
                 OpcodeType.JNE => Operand1 switch
                 {
-                    byte x => new Binary(0x75, x),
+                    byte x => new AssemblyHex(0x75, x),
                     _ => null
                 },
                 #endregion
@@ -948,7 +950,7 @@ namespace Saturn.Assembly
                 #region JNO
                 OpcodeType.JNO => Operand1 switch
                 {
-                    byte x => new Binary(0x71, x),
+                    byte x => new AssemblyHex(0x71, x),
                     _ => null
                 },
                 #endregion
@@ -956,7 +958,7 @@ namespace Saturn.Assembly
                 #region JNP
                 OpcodeType.JNP => Operand1 switch
                 {
-                    byte x => new Binary(0x7B, x),
+                    byte x => new AssemblyHex(0x7B, x),
                     _ => null
                 },
                 #endregion
@@ -964,7 +966,7 @@ namespace Saturn.Assembly
                 #region JNS
                 OpcodeType.JNS => Operand1 switch
                 {
-                    byte x => new Binary(0x79, x),
+                    byte x => new AssemblyHex(0x79, x),
                     _ => null
                 },
                 #endregion
@@ -972,7 +974,7 @@ namespace Saturn.Assembly
                 #region JO
                 OpcodeType.JO => Operand1 switch
                 {
-                    byte x => new Binary(0x70, x),
+                    byte x => new AssemblyHex(0x70, x),
                     _ => null
                 },
                 #endregion
@@ -980,7 +982,7 @@ namespace Saturn.Assembly
                 #region JP
                 OpcodeType.JP => Operand1 switch
                 {
-                    byte x => new Binary(0x7A, x),
+                    byte x => new AssemblyHex(0x7A, x),
                     _ => null
                 },
                 #endregion
@@ -988,25 +990,25 @@ namespace Saturn.Assembly
                 #region JS
                 OpcodeType.JS => Operand1 switch
                 {
-                    byte x => new Binary(0x78, x),
+                    byte x => new AssemblyHex(0x78, x),
                     _ => null
                 },
                 #endregion
 
                 #region LAHF
-                OpcodeType.LAHF => new Binary(0x9F),
+                OpcodeType.LAHF => new AssemblyHex(0x9F),
                 #endregion
 
                 #region LEA
                 OpcodeType.LEA => Operand1 switch
                 {
-                    R32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x8D00)),
+                    R32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x8D00)),
                     _ => null
                 },
                 #endregion
 
                 #region LEAVE
-                OpcodeType.LEAVE => new Binary(0xC9),
+                OpcodeType.LEAVE => new AssemblyHex(0xC9),
                 #endregion
 
                 #region LOCK
@@ -1016,18 +1018,18 @@ namespace Saturn.Assembly
                 #region LODS / LODSB / LODSD
                 OpcodeType.LODS => Operand1 switch
                 {
-                    R8.AL => new Binary(0xAC),
-                    R32.EAX => new Binary(0xAD),
+                    R8.AL => new AssemblyHex(0xAC),
+                    R32.EAX => new AssemblyHex(0xAD),
                     _ => null
                 },
-                OpcodeType.LODSB => new Binary(0xAC),
-                OpcodeType.LODSD => new Binary(0xAD),
+                OpcodeType.LODSB => new AssemblyHex(0xAC),
+                OpcodeType.LODSD => new AssemblyHex(0xAD),
                 #endregion
 
                 #region LOOP
                 OpcodeType.LOOP => Operand1 switch
                 {
-                    byte x => new Binary(0xE2, x),
+                    byte x => new AssemblyHex(0xE2, x),
                     _ => null
                 },
                 #endregion
@@ -1035,7 +1037,7 @@ namespace Saturn.Assembly
                 #region LOOPE
                 OpcodeType.LOOPE => Operand1 switch
                 {
-                    byte x => new Binary(0xE1, x),
+                    byte x => new AssemblyHex(0xE1, x),
                     _ => null
                 },
                 #endregion
@@ -1043,7 +1045,7 @@ namespace Saturn.Assembly
                 #region LOOPNE
                 OpcodeType.LOOPNE => Operand1 switch
                 {
-                    byte x => new Binary(0xE0, x),
+                    byte x => new AssemblyHex(0xE0, x),
                     _ => null
                 },
                 #endregion
@@ -1053,56 +1055,69 @@ namespace Saturn.Assembly
                 {
                     PTRC x => Operand2 switch
                     {
-                        byte y => new Binary(0xC605, x.Value, y),
-                        ushort y => new Binary(0x66C705, x.Value, y),
-                        uint y => new Binary(0xC705, x.Value, y),
-                        R8.AL => new Binary(0xA2, x.Value),
-                        R32.EAX => new Binary(0xA3, x.Value),
+                        byte y => new AssemblyHex(0xC605, x.Value, y),
+                        ushort y => new AssemblyHex(0x66C705, x.Value, y),
+                        uint y => new AssemblyHex(0xC705, x.Value, y),
+                        R8 _ => Operand2 switch
+                        {
+                            R8.AL => new AssemblyHex(0xA2, x.Value),
+                            _ => new AssemblyHex(Formalize(CodeFormat.JustTwo, 0x8805), x.Value)
+                        },
+                        R16 _ => Operand2 switch
+                        {
+                            R16.AX => new AssemblyHex(0x66A3, x.Value),
+                            _ => new AssemblyHex(Formalize(CodeFormat.JustTwo, 0x668905), x.Value)
+                        },
+                        R32 _ => Operand2 switch
+                        {
+                            R32.EAX => new AssemblyHex(0xA3, x.Value),
+                            _ => new AssemblyHex(Formalize(CodeFormat.JustTwo, 0x8905), x.Value)
+                        },
                         _ => null
                     },
                     PTR8 _ => Operand2 switch
                     {
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8800)),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8800)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x668900)),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x668900)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8900)),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8900)),
                         _ => null
                     },
                     R8 _ => Operand1 switch
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0xB0, x),
+                            byte x => new AssemblyHex(0xB0, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x8A45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x8A00))
+                                PTR8.EBP => new AssemblyHex(0x8A45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x8A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0xA0, x.Value),
+                                DataType.BYTE => new AssemblyHex(0xA0, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0xB0), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xB0), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x8A45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x8A00))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8A45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x8A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x8A05), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8A05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1112,30 +1127,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x66B8, x),
+                            ushort x => new AssemblyHex(0x66B8, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x668B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x668B00))
+                                PTR16.EBP => new AssemblyHex(0x668B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x668B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x66A1, x.Value),
+                                DataType.WORD => new AssemblyHex(0x66A1, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x66B8), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x66B8), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x668B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x668B00))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x668B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x668B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x668B05), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x668B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1145,30 +1160,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0xB8, x),
+                            uint x => new AssemblyHex(0xB8, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x8B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x8B00))
+                                PTR32.EBP => new AssemblyHex(0x8B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x8B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0xA1, x.Value),
+                                DataType.DWORD => new AssemblyHex(0xA1, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0xB8), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0xB8), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x8B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x8B00))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x8B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x8B05), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1176,7 +1191,7 @@ namespace Saturn.Assembly
                     },
                     S _ => Operand2 switch
                     {
-                        PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x8E00)),
+                        PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x8E00)),
                         _ => null
                     },
                     _ => null
@@ -1186,19 +1201,19 @@ namespace Saturn.Assembly
                 #region MOVS / MOVSB / MOVSD
                 OpcodeType.MOVS => Operand1 switch
                 {
-                    PTR8 _ => new Binary(0xA4),
-                    PTR32 _ => new Binary(0xA5),
+                    PTR8 _ => new AssemblyHex(0xA4),
+                    PTR32 _ => new AssemblyHex(0xA5),
                     _ => null
                 },
-                OpcodeType.MOVSB => new Binary(0xA4),
-                OpcodeType.MOVSD => new Binary(0xA5),
+                OpcodeType.MOVSB => new AssemblyHex(0xA4),
+                OpcodeType.MOVSD => new AssemblyHex(0xA5),
                 #endregion
 
                 #region MUL
                 OpcodeType.MUL => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF725, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF720)),
+                    PTRC x => new AssemblyHex(0xF725, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF720)),
                     _ => null
                 },
                 #endregion
@@ -1206,21 +1221,21 @@ namespace Saturn.Assembly
                 #region NEG
                 OpcodeType.NEG => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF71D, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF718)),
+                    PTRC x => new AssemblyHex(0xF71D, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF718)),
                     _ => null
                 },
                 #endregion
 
                 #region NOP
-                OpcodeType.NOP => new Binary(0x90),
+                OpcodeType.NOP => new AssemblyHex(0x90),
                 #endregion
 
                 #region NOT
                 OpcodeType.NOT => Operand1 switch
                 {
-                    PTRC x => new Binary(0xF715, x.Value),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xF710)),
+                    PTRC x => new AssemblyHex(0xF715, x.Value),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xF710)),
                     _ => null
                 },
                 #endregion
@@ -1230,51 +1245,51 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8008), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x0800)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8008), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x0800)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668308), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668108), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x660900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668308), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668108), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x660900)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8308), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8108), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x0900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8308), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8108), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x0900)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
-                        DataType.BYTE => new Binary(0x0805, x.Value),
-                        DataType.WORD => new Binary(0x660905, x.Value),
-                        DataType.DWORD => new Binary(0x0905, x.Value),
+                        DataType.BYTE => new AssemblyHex(0x0805, x.Value),
+                        DataType.WORD => new AssemblyHex(0x660905, x.Value),
+                        DataType.DWORD => new AssemblyHex(0x0905, x.Value),
                         _ => null
                     },
                     R8 _ => Operand1 switch
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x0C, x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0A00)),
+                            byte x => new AssemblyHex(0x0C, x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0A00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x0A05, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x0A05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80C8), x),
-                            PTR8 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0A00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80C8), x),
+                            PTR8 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0A00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x0A05), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0A05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1284,24 +1299,24 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            byte x => new Binary(0x6683C8, x),
-                            ushort x => new Binary(0x660D, x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x660B00)),
+                            byte x => new AssemblyHex(0x6683C8, x),
+                            ushort x => new AssemblyHex(0x660D, x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x660B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x660B05, x.Value),
+                                DataType.WORD => new AssemblyHex(0x660B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x6683C8), x),
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681C8), x),
-                            PTR16 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x660B00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x6683C8), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681C8), x),
+                            PTR16 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x660B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x660B05), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x660B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1311,24 +1326,24 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            byte x => new Binary(0x83C8, x),
-                            uint x => new Binary(0x0D, x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0B00)),
+                            byte x => new AssemblyHex(0x83C8, x),
+                            uint x => new AssemblyHex(0x0D, x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x0B05, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x0B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x83C8), x),
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81C8), x),
-                            PTR32 _ => new Binary(Formalize(CodeFormat.OneTwo, 0x0B00)),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x83C8), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81C8), x),
+                            PTR32 _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x0B00)),
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x0B05), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1343,14 +1358,14 @@ namespace Saturn.Assembly
                 {
                     byte x => Operand2 switch
                     {
-                        R8.AL => new Binary(0xE6, x),
-                        R32.EAX => new Binary(0xE7, x),
+                        R8.AL => new AssemblyHex(0xE6, x),
+                        R32.EAX => new AssemblyHex(0xE7, x),
                         _ => null
                     },
                     R16.DX => Operand2 switch
                     {
-                        R8.AL => new Binary(0xEE),
-                        R32.EAX => new Binary(0xEF),
+                        R8.AL => new AssemblyHex(0xEE),
+                        R32.EAX => new AssemblyHex(0xEF),
                         _ => null
                     },
                     _ => null
@@ -1362,60 +1377,60 @@ namespace Saturn.Assembly
                 {
                     R16.DX => Operand2 switch
                     {
-                        PTR8.ESI => new Binary(0x6E),
-                        PTR32.ESI => new Binary(0x6F),
+                        PTR8.ESI => new AssemblyHex(0x6E),
+                        PTR32.ESI => new AssemblyHex(0x6F),
                         _ => null
                     },
                     _ => null
                 },
-                OpcodeType.OUTSB => new Binary(0x6E),
-                OpcodeType.OUTSD => new Binary(0x6F),
+                OpcodeType.OUTSB => new AssemblyHex(0x6E),
+                OpcodeType.OUTSD => new AssemblyHex(0x6F),
                 #endregion
 
                 #region POP
                 OpcodeType.POP => Operand1 switch
                 {
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0x8F00)),
-                    R32 _ => new Binary(Formalize(CodeFormat.One, 0x58)),
-                    S.ES => new Binary(0x07),
-                    S.SS => new Binary(0x17),
-                    S.DS => new Binary(0x1F),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0x8F00)),
+                    R32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0x58)),
+                    S.ES => new AssemblyHex(0x07),
+                    S.SS => new AssemblyHex(0x17),
+                    S.DS => new AssemblyHex(0x1F),
                     _ => null
                 },
                 #endregion
 
                 #region POPA / POPAD
-                OpcodeType.POPA => new Binary(0x61),
-                OpcodeType.POPAD => new Binary(0x61),
+                OpcodeType.POPA => new AssemblyHex(0x61),
+                OpcodeType.POPAD => new AssemblyHex(0x61),
                 #endregion
 
                 #region POPF / POPFD
-                OpcodeType.POPF => new Binary(0x9D),
-                OpcodeType.POPFD => new Binary(0x9D),
+                OpcodeType.POPF => new AssemblyHex(0x9D),
+                OpcodeType.POPFD => new AssemblyHex(0x9D),
                 #endregion
 
                 #region PUSH
                 OpcodeType.PUSH => Operand1 switch
                 {
-                    byte x => new Binary(0x6A, x),
-                    PTR32 _ => new Binary(Formalize(CodeFormat.One, 0xFF30)),
-                    R32 _ => new Binary(Formalize(CodeFormat.One, 0x50)),
-                    S.ES => new Binary(0x06),
-                    S.CS => new Binary(0x0E),
-                    S.SS => new Binary(0x16),
-                    S.DS => new Binary(0x1E),
+                    byte x => new AssemblyHex(0x6A, x),
+                    PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF30)),
+                    R32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0x50)),
+                    S.ES => new AssemblyHex(0x06),
+                    S.CS => new AssemblyHex(0x0E),
+                    S.SS => new AssemblyHex(0x16),
+                    S.DS => new AssemblyHex(0x1E),
                     _ => null
                 },
                 #endregion
 
                 #region PUSHA / PUSHAD
-                OpcodeType.PUSHA => new Binary(0x60),
-                OpcodeType.PUSHAD => new Binary(0x60),
+                OpcodeType.PUSHA => new AssemblyHex(0x60),
+                OpcodeType.PUSHAD => new AssemblyHex(0x60),
                 #endregion
 
                 #region PUSHF / PUSHFD
-                OpcodeType.PUSHF => new Binary(0x9C),
-                OpcodeType.PUSHFD => new Binary(0x9C),
+                OpcodeType.PUSHF => new AssemblyHex(0x9C),
+                OpcodeType.PUSHFD => new AssemblyHex(0x9C),
                 #endregion
 
                 #region REPZ
@@ -1427,12 +1442,12 @@ namespace Saturn.Assembly
                 #endregion
 
                 #region RET
-                OpcodeType.RET => new Binary(0xC3),
+                OpcodeType.RET => new AssemblyHex(0xC3),
                 #endregion
 
                 #region RETF / RETFAR
-                OpcodeType.RETF => new Binary(0xCB),
-                OpcodeType.RETFAR => new Binary(0xCB),
+                OpcodeType.RETF => new AssemblyHex(0xCB),
+                OpcodeType.RETFAR => new AssemblyHex(0xCB),
                 #endregion
 
                 #region RCL
@@ -1440,14 +1455,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD010)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD210)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD010)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD210)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD110)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD310)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD110)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD310)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0D0)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0D0), x),
                         _ => null
                     },
                     _ => null
@@ -1459,14 +1480,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD018)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD218)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD018)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD218)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD118)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD318)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD118)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD318)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0D8)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0D8), x),
                         _ => null
                     },
                     _ => null
@@ -1478,14 +1505,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD000)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD200)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD000)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD200)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD100)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD300)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD100)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD300)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0C0)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0C0), x),
                         _ => null
                     },
                     _ => null
@@ -1497,14 +1530,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD008)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD208)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD008)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD208)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD108)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD308)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD108)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD308)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0C8)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0C8), x),
                         _ => null
                     },
                     _ => null
@@ -1512,7 +1551,7 @@ namespace Saturn.Assembly
                 #endregion
 
                 #region SAHF
-                OpcodeType.SAHF => new Binary(0x9E),
+                OpcodeType.SAHF => new AssemblyHex(0x9E),
                 #endregion
 
                 #region SBB
@@ -1520,41 +1559,41 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8018), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x1800)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8018), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x1800)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668318), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668118), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x661900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668318), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668118), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x661900)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8318), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8118), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x1900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8318), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8118), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x1900)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
                         DataType.BYTE => Operand2 switch
                         {
-                            byte y => new Binary(0x801D, x.Value, y),
+                            byte y => new AssemblyHex(0x801D, x.Value, y),
                             _ => null
                         },
                         DataType.WORD => Operand2 switch
                         {
-                            byte y => new Binary(0x66831D, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
-                            ushort y => new Binary(0x66811D, x.Value, y),
+                            byte y => new AssemblyHex(0x66831D, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
+                            ushort y => new AssemblyHex(0x66811D, x.Value, y),
                             _ => null
                         },
                         DataType.DWORD => Operand2 switch
                         {
-                            byte y => new Binary(0x831D, x.Value, y),
-                            uint y => new Binary(0x811D, x.Value, y),
+                            byte y => new AssemblyHex(0x831D, x.Value, y),
+                            uint y => new AssemblyHex(0x811D, x.Value, y),
                             _ => null
                         },
                         _ => null
@@ -1563,30 +1602,30 @@ namespace Saturn.Assembly
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x1C, x),
+                            byte x => new AssemblyHex(0x1C, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x1A45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x1A00))
+                                PTR8.EBP => new AssemblyHex(0x1A45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x1A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x1A05, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x1A05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80D8), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80D8), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x1A45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x1A00))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1A45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x1A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x1A05), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1A05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1596,30 +1635,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x661D, x),
+                            ushort x => new AssemblyHex(0x661D, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x661B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x661B00))
+                                PTR16.EBP => new AssemblyHex(0x661B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x661B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x661B05, x.Value),
+                                DataType.WORD => new AssemblyHex(0x661B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681D8), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681D8), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x661B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x661B00))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x661B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x661B05), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1629,30 +1668,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0x1D, x),
+                            uint x => new AssemblyHex(0x1D, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x1B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x1B00))
+                                PTR32.EBP => new AssemblyHex(0x1B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x1B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x1B05, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x1B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81D8), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81D8), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x1B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x1B00))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x1B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x1B05), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1665,12 +1704,12 @@ namespace Saturn.Assembly
                 #region SCAS / SCASB / SCASD
                 OpcodeType.SCAS => Operand1 switch
                 {
-                    R8.AL => new Binary(0xAE),
-                    R32.EAX => new Binary(0xAF),
+                    R8.AL => new AssemblyHex(0xAE),
+                    R32.EAX => new AssemblyHex(0xAF),
                     _ => null
                 },
-                OpcodeType.SCASB => new Binary(0xAE),
-                OpcodeType.SCASD => new Binary(0xAF),
+                OpcodeType.SCASB => new AssemblyHex(0xAE),
+                OpcodeType.SCASD => new AssemblyHex(0xAF),
                 #endregion
 
                 #region SHL
@@ -1678,14 +1717,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD020)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD220)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD020)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD220)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD120)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD320)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD120)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD320)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0E0)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0E0), x),
                         _ => null
                     },
                     _ => null
@@ -1697,14 +1742,20 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD028)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD228)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD028)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD228)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x when x == 1 => new Binary(Formalize(CodeFormat.One, 0xD128)),
-                        R8.CL => new Binary(Formalize(CodeFormat.One, 0xD328)),
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD128)),
+                        R8.CL => new AssemblyHex(Formalize(CodeFormat.One, 0xD328)),
+                        _ => null
+                    },
+                    R8 _ => Operand2 switch
+                    {
+                        byte x when x == 1 => new AssemblyHex(Formalize(CodeFormat.One, 0xD0E8)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0xC0E8), x),
                         _ => null
                     },
                     _ => null
@@ -1716,15 +1767,15 @@ namespace Saturn.Assembly
                 #endregion
 
                 #region STC
-                OpcodeType.STC => new Binary(0xF9),
+                OpcodeType.STC => new AssemblyHex(0xF9),
                 #endregion
 
                 #region STD
-                OpcodeType.STD => new Binary(0xFD),
+                OpcodeType.STD => new AssemblyHex(0xFD),
                 #endregion
 
                 #region STI
-                OpcodeType.STI => new Binary(0xFB),
+                OpcodeType.STI => new AssemblyHex(0xFB),
                 #endregion
 
                 #region STOS / STOSB / STOSD
@@ -1732,18 +1783,18 @@ namespace Saturn.Assembly
                 {
                     PTR8.EDI => Operand2 switch
                     {
-                        R8.AL => new Binary(0xAA),
+                        R8.AL => new AssemblyHex(0xAA),
                         _ => null
                     },
                     PTR32.EDI => Operand2 switch
                     {
-                        R32.EAX => new Binary(0xAB),
+                        R32.EAX => new AssemblyHex(0xAB),
                         _ => null
                     },
                     _ => null
                 },
-                OpcodeType.STOSB => new Binary(0xAA),
-                OpcodeType.STOSD => new Binary(0xAB),
+                OpcodeType.STOSB => new AssemblyHex(0xAA),
+                OpcodeType.STOSD => new AssemblyHex(0xAB),
                 #endregion
 
                 #region SUB
@@ -1751,41 +1802,41 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8028), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x2800)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8028), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x2800)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668328), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668128), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x662900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668328), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668128), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x662900)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8328), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8128), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x2900)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8328), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8128), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x2900)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
                         DataType.BYTE => Operand2 switch
                         {
-                            byte y => new Binary(0x802D, x.Value, y),
+                            byte y => new AssemblyHex(0x802D, x.Value, y),
                             _ => null
                         },
                         DataType.WORD => Operand2 switch
                         {
-                            byte y => new Binary(0x66832D, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
-                            ushort y => new Binary(0x66812D, x.Value, y),
+                            byte y => new AssemblyHex(0x66832D, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
+                            ushort y => new AssemblyHex(0x66812D, x.Value, y),
                             _ => null
                         },
                         DataType.DWORD => Operand2 switch
                         {
-                            byte y => new Binary(0x832D, x.Value, y),
-                            uint y => new Binary(0x812D, x.Value, y),
+                            byte y => new AssemblyHex(0x832D, x.Value, y),
+                            uint y => new AssemblyHex(0x812D, x.Value, y),
                             _ => null
                         },
                         _ => null
@@ -1794,30 +1845,30 @@ namespace Saturn.Assembly
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x2C, x),
+                            byte x => new AssemblyHex(0x2C, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x2A45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x2A00))
+                                PTR8.EBP => new AssemblyHex(0x2A45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x2A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x2A05, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x2A05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80D8), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80D8), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x2A45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2A00))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2A45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2A00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x2A05), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2A05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1827,30 +1878,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x662D, x),
+                            ushort x => new AssemblyHex(0x662D, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x662B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x662B00))
+                                PTR16.EBP => new AssemblyHex(0x662B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x662B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x662B05, x.Value),
+                                DataType.WORD => new AssemblyHex(0x662B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681E8), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681E8), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x662B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x662B00))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x662B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x662B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x662B05), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x662B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1860,30 +1911,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0x2D, x),
+                            uint x => new AssemblyHex(0x2D, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x2B45, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x2B00))
+                                PTR32.EBP => new AssemblyHex(0x2B45, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x2B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x2B05, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x2B05, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81E8), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81E8), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x2B45), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x2B00))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2B45), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x2B00))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x2B05), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2B05), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -1898,23 +1949,23 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8400)),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8400)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        uint x => new Binary(Formalize(CodeFormat.One, 0xF700), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8500)),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0xF700), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8500)),
                         _ => null
                     },
                     R8.AL => Operand2 switch
                     {
-                        byte x => new Binary(0xA8, x),
+                        byte x => new AssemblyHex(0xA8, x),
                         _ => null
                     },
                     R32.EAX => Operand2 switch
                     {
-                        uint x => new Binary(0xA9, x),
+                        uint x => new AssemblyHex(0xA9, x),
                         _ => null
                     },
                     _ => null
@@ -1926,17 +1977,17 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8600)),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8600)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x8700)),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x8700)),
                         _ => null
                     },
                     R32 _ => Operand2 switch
                     {
-                        R32.EAX => new Binary(Formalize(CodeFormat.One, 0x90)),
+                        R32.EAX => new AssemblyHex(Formalize(CodeFormat.One, 0x90)),
                         _ => null
                     },
                     _ => null
@@ -1946,8 +1997,8 @@ namespace Saturn.Assembly
                 #region XLAT
                 OpcodeType.XLAT => Operand1 switch
                 {
-                    null => new Binary(0xD7),
-                    PTR8.EBX => new Binary(0xD7),
+                    null => new AssemblyHex(0xD7),
+                    PTR8.EBX => new AssemblyHex(0xD7),
                     _ => null
                 },
                 #endregion
@@ -1957,41 +2008,41 @@ namespace Saturn.Assembly
                 {
                     PTR8 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8030), x),
-                        R8 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x3000)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8030), x),
+                        R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x3000)),
                         _ => null
                     },
                     PTR16 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x668330), x),
-                        ushort x => new Binary(Formalize(CodeFormat.One, 0x668130), x),
-                        R16 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x663100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x668330), x),
+                        ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x668130), x),
+                        R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x663100)),
                         _ => null
                     },
                     PTR32 _ => Operand2 switch
                     {
-                        byte x => new Binary(Formalize(CodeFormat.One, 0x8330), x),
-                        uint x => new Binary(Formalize(CodeFormat.One, 0x8130), x),
-                        R32 _ => new Binary(Formalize(CodeFormat.TwoOne, 0x3100)),
+                        byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x8330), x),
+                        uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x8130), x),
+                        R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x3100)),
                         _ => null
                     },
                     PTRC x => x.DataType switch
                     {
                         DataType.BYTE => Operand2 switch
                         {
-                            byte y => new Binary(0x8035, x.Value, y),
+                            byte y => new AssemblyHex(0x8035, x.Value, y),
                             _ => null
                         },
                         DataType.WORD => Operand2 switch
                         {
-                            byte y => new Binary(0x668335, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
-                            ushort y => new Binary(0x668135, x.Value, y),
+                            byte y => new AssemblyHex(0x668335, x.Value, y), // TODO: ADD는 크기상관없이 항상 byte, word, dword가 존재함
+                            ushort y => new AssemblyHex(0x668135, x.Value, y),
                             _ => null
                         },
                         DataType.DWORD => Operand2 switch
                         {
-                            byte y => new Binary(0x8335, x.Value, y),
-                            uint y => new Binary(0x8135, x.Value, y),
+                            byte y => new AssemblyHex(0x8335, x.Value, y),
+                            uint y => new AssemblyHex(0x8135, x.Value, y),
                             _ => null
                         },
                         _ => null
@@ -2000,30 +2051,30 @@ namespace Saturn.Assembly
                     {
                         R8.AL => Operand2 switch
                         {
-                            byte x => new Binary(0x34, x),
+                            byte x => new AssemblyHex(0x34, x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(0x3245, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x3200))
+                                PTR8.EBP => new AssemblyHex(0x3245, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x3200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(0x3205, x.Value),
+                                DataType.BYTE => new AssemblyHex(0x3205, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            byte x => new Binary(Formalize(CodeFormat.One, 0x80F0), x),
+                            byte x => new AssemblyHex(Formalize(CodeFormat.One, 0x80F0), x),
                             PTR8 _ => Operand2 switch
                             {
-                                PTR8.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x3245), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3200))
+                                PTR8.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3245), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3200))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.BYTE => new Binary(Formalize(CodeFormat.JustOne, 0x3205), x.Value),
+                                DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3205), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -2033,30 +2084,30 @@ namespace Saturn.Assembly
                     {
                         R16.AX => Operand2 switch
                         {
-                            ushort x => new Binary(0x6635, x),
+                            ushort x => new AssemblyHex(0x6635, x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(0x663345, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x663300))
+                                PTR16.EBP => new AssemblyHex(0x663345, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x663300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(0x663305, x.Value),
+                                DataType.WORD => new AssemblyHex(0x663305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            ushort x => new Binary(Formalize(CodeFormat.One, 0x6681F0), x),
+                            ushort x => new AssemblyHex(Formalize(CodeFormat.One, 0x6681F0), x),
                             PTR16 _ => Operand2 switch
                             {
-                                PTR16.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x663345), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x663300))
+                                PTR16.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x663345), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x663300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.WORD => new Binary(Formalize(CodeFormat.JustOne, 0x663305), x.Value),
+                                DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x663305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -2066,30 +2117,30 @@ namespace Saturn.Assembly
                     {
                         R32.EAX => Operand2 switch
                         {
-                            uint x => new Binary(0x35, x),
+                            uint x => new AssemblyHex(0x35, x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(0x3345, (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.Two, 0x3300))
+                                PTR32.EBP => new AssemblyHex(0x3345, (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.Two, 0x3300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(0x3305, x.Value),
+                                DataType.DWORD => new AssemblyHex(0x3305, x.Value),
                                 _ => null
                             },
                             _ => null
                         },
                         _ => Operand2 switch
                         {
-                            uint x => new Binary(Formalize(CodeFormat.One, 0x81F0), x),
+                            uint x => new AssemblyHex(Formalize(CodeFormat.One, 0x81F0), x),
                             PTR32 _ => Operand2 switch
                             {
-                                PTR32.EBP => new Binary(Formalize(CodeFormat.JustOne, 0x3345), (byte)0x00),
-                                _ => new Binary(Formalize(CodeFormat.OneTwo, 0x3300))
+                                PTR32.EBP => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3345), (byte)0x00),
+                                _ => new AssemblyHex(Formalize(CodeFormat.OneTwo, 0x3300))
                             },
                             PTRC x => x.DataType switch
                             {
-                                DataType.DWORD => new Binary(Formalize(CodeFormat.JustOne, 0x3305), x.Value),
+                                DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3305), x.Value),
                                 _ => null
                             },
                             _ => null
@@ -2103,7 +2154,7 @@ namespace Saturn.Assembly
             };
         }
 
-        Binary ToMachineCodeTest()
+        AssemblyHex ToMachineCodeTest()
         {
             //switch (Opcode)
             //{

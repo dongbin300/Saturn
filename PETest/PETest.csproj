@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <Reference Include="SimplePerformanceChecker">
-      <HintPath>bin\Debug\netcoreapp3.1\SimplePerformanceChecker.dll</HintPath>
+      <HintPath>..\SaturnStation\netcoreapp3.1\SimplePerformanceChecker.dll</HintPath>
     </Reference>
   </ItemGroup>
 

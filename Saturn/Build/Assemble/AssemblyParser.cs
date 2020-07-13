@@ -9,15 +9,42 @@ namespace Saturn.Build.Assemble
 {
     public class AssemblyParser
     {
-        public static (List<Instruction>, List<Variable>) Parse(string assemblyText, uint textSectionRawSize = 0x00000000, uint dataSectionRawSize = 0x00000000)
+        public enum ParseType
         {
-            List<Instruction> instructions = new List<Instruction>();
-            AddressManager addressManager = textSectionRawSize == 0 && dataSectionRawSize == 0 ? new AddressManager() : new AddressManager(textSectionRawSize, dataSectionRawSize);
+            Pre,
+            Real
+        }
+
+        /// <summary>
+        /// Parse Assembly
+        /// Must be set text and data section raw size when real-parse
+        /// </summary>
+        /// <param name="assemblyText"></param>
+        /// <param name="parseType"></param>
+        /// <param name="textSectionRawSize"></param>
+        /// <param name="dataSectionRawSize"></param>
+        /// <returns></returns>
+        public static (List<Instruction>, List<Variable>) Parse(string assemblyText, ParseType parseType, uint textSectionRawSize = 0, uint dataSectionRawSize = 0)
+        {
+            // Initializing AddressManager
+            if (parseType == ParseType.Pre)
+            {
+                AddressManager.Initialize();
+            }
+            else if (parseType == ParseType.Real)
+            {
+                AddressManager.Initialize(textSectionRawSize, dataSectionRawSize);
+            }
+            else
+            {
+                throw new Exception("[ParseTypeNull] parse type doesn't exist.");
+            }
+
             int lineNumber = 0;
 
             try
             {
-                string[] instructionTexts = assemblyText.ToUpper().Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] instructionTexts = assemblyText.ToUpper().Split(new string[] { "\n" }, StringSplitOptions.None);
 
                 foreach (string instructionText in instructionTexts)
                 {
@@ -25,17 +52,25 @@ namespace Saturn.Build.Assemble
 
                     string instructionTextExcludeComment = instructionText.Split(';')[0];
 
-                    if (instructionTextExcludeComment == string.Empty)
+                    if (instructionTextExcludeComment == string.Empty) // All texts were comments
                     {
                         continue;
                     }
 
                     int firstSpaceIndex = instructionTextExcludeComment.IndexOf(' ');
 
-                    if (firstSpaceIndex == -1) // Opcode + 0 Operand
+                    if (firstSpaceIndex == -1)
                     {
-                        OpcodeType opcode = (OpcodeType)ParseHead(instructionTextExcludeComment);
-                        instructions.Add(new Instruction(opcode));
+                        object head = ParseHead(instructionTextExcludeComment);
+
+                        if (head is OpcodeType opcode) // Opcode + 0 Operand
+                        {
+                            AddressManager.AddInstruction(opcode);
+                        }
+                        else if (head is string siteName) // Site
+                        {
+                            AddressManager.AddSite(siteName);
+                        }
                     }
                     else
                     {
@@ -49,14 +84,16 @@ namespace Saturn.Build.Assemble
 
                             if (operandTexts.Length == 1) // Opcode + 1 Operand
                             {
-                                object operand1 = ParseOperand(operandTexts[0], addressManager, opcode);
-                                instructions.Add(new Instruction(opcode, operand1));
+                                object operand1 = ParseOperand(operandTexts[0], parseType, opcode, opcode);
+
+                                AddressManager.AddInstruction(opcode, operand1);
                             }
                             else if (operandTexts.Length == 2) // Opcode + 2 Operands
                             {
-                                object operand1 = ParseOperand(operandTexts[0], addressManager, null, opcode);
-                                object operand2 = ParseOperand(operandTexts[1], addressManager, operand1, opcode);
-                                instructions.Add(new Instruction(opcode, operand1, operand2));
+                                object operand1 = ParseOperand(operandTexts[0], parseType, null, opcode);
+                                object operand2 = ParseOperand(operandTexts[1], parseType, operand1, opcode);
+
+                                AddressManager.AddInstruction(opcode, operand1, operand2);
                             }
                         }
 
@@ -69,18 +106,18 @@ namespace Saturn.Build.Assemble
                             {
                                 string variableName = variableTexts[0];
 
-                                if (addressManager.IsExistVariable(variableName))
+                                if (AddressManager.IsExistVariable(variableName))
                                 {
                                     throw new Exception("[VariableNameOverlap] variable already exists.");
                                 }
 
-                                addressManager.AddVariable(dataType, variableName, 0);
+                                AddressManager.AddVariable(dataType, variableName, 0);
                             }
                             else if (variableTexts.Length == 2) // DataType + Variable Name + Initial Value
                             {
                                 string variableName = variableTexts[0];
 
-                                if (addressManager.IsExistVariable(variableName))
+                                if (AddressManager.IsExistVariable(variableName))
                                 {
                                     throw new Exception("[VariableNameOverlap] variable already exists.");
                                 }
@@ -90,22 +127,22 @@ namespace Saturn.Build.Assemble
                                 {
                                     case DataType.BYTE:
                                         byte byteResult = ConvertToByte(variableTexts[1]);
-                                        addressManager.AddVariable(dataType, variableName, byteResult);
+                                        AddressManager.AddVariable(dataType, variableName, byteResult);
                                         break;
 
                                     case DataType.WORD:
                                         ushort wordResult = ConvertToWord(variableTexts[1]);
-                                        addressManager.AddVariable(dataType, variableName, wordResult);
+                                        AddressManager.AddVariable(dataType, variableName, wordResult);
                                         break;
 
                                     case DataType.DWORD:
                                         uint dwordResult = ConvertToDword(variableTexts[1]);
-                                        addressManager.AddVariable(dataType, variableName, dwordResult);
+                                        AddressManager.AddVariable(dataType, variableName, dwordResult);
                                         break;
 
                                     case DataType.QWORD:
                                         ulong qwordResult = ConvertToQword(variableTexts[1]);
-                                        addressManager.AddVariable(dataType, variableName, qwordResult);
+                                        AddressManager.AddVariable(dataType, variableName, qwordResult);
                                         break;
 
                                     default:
@@ -121,7 +158,7 @@ namespace Saturn.Build.Assemble
                 throw new Exception(ex.Message + ", line:" + lineNumber);
             }
 
-            return (instructions, addressManager.Variables);
+            return (AddressManager.Instructions, AddressManager.Variables);
         }
 
         /// <summary>
@@ -130,16 +167,26 @@ namespace Saturn.Build.Assemble
         ///     -ADD, MUL, RET, INC, PUSH, POP, MOV, ...
         /// ii) Data Type
         ///     -BYTE, WORD, DWORD, QWORD
+        /// iii) Site
+        ///     -LOCATION1:, GOOD:, TRUE:, ...
         /// </summary>
         /// <param name="headText"></param>
         /// <returns></returns>
         static object ParseHead(string headText)
         {
+            // iii) Site
+            if (headText.Contains(":"))
+            {
+                return headText.Replace(":", "").Trim();
+            }
+
+            // i) Opcode
             if (Enum.TryParse(typeof(OpcodeType), headText, out object result))
             {
                 return result;
             }
 
+            // ii) Data Type
             if (Enum.TryParse(typeof(DataType), headText, out result))
             {
                 return result;
@@ -162,10 +209,13 @@ namespace Saturn.Build.Assemble
         ///     -num1, num2, ...
         /// vi) Constant Value Type
         ///     -11, 12, 13, 14, ...
+        /// vii) Site Type
+        ///     -LOCATION1:, GOOD:, TRUE:, ...
+        /// *) Special Case
         /// </summary>
         /// <param name="operandText"></param>
         /// <returns></returns>
-        static object ParseOperand(string operandText, AddressManager addressManager, object preArgument = null, OpcodeType opcode = OpcodeType.RET)
+        static object ParseOperand(string operandText, ParseType parseType, object preArgument = null, OpcodeType opcode = OpcodeType.RET)
         {
             string[] operandTexts = operandText.Split(new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -175,7 +225,7 @@ namespace Saturn.Build.Assemble
                 if (StringUtil.IsHexaDecimalString(operandTexts[0]))
                 {
                     // *) Special Case
-                    switch(opcode)
+                    switch (opcode)
                     {
                         case OpcodeType.IN:
                         case OpcodeType.OUT:
@@ -213,7 +263,7 @@ namespace Saturn.Build.Assemble
                         }
                     }
 
-                    if(preArgument is PTR8 || preArgument is R8)
+                    if (preArgument is PTR8 || preArgument is R8)
                     {
                         return ConvertToByte(operandTexts[0]);
                     }
@@ -230,7 +280,7 @@ namespace Saturn.Build.Assemble
                         return ConvertToQword(operandTexts[0]);
                     }
 
-                    if(preArgument is OpcodeType opcodeType)
+                    if (preArgument is OpcodeType opcodeType)
                     {
                         switch (opcodeType)
                         {
@@ -286,15 +336,52 @@ namespace Saturn.Build.Assemble
                         return result;
 
                     // v) Variable Type
-                    if (addressManager.IsExistVariable(operandTexts[0]))
+                    if (AddressManager.TryGetVariable(operandTexts[0], out Variable variable))
                     {
-                        Variable variable = addressManager.GetVariable(operandTexts[0]);
-
                         return new PTRC(variable.DataType, variable.Address);
                     }
-                    else
+
+                    // vii) Site Type
+                    if (parseType == ParseType.Pre)
                     {
-                        throw new Exception($"[VariableGetError] variable doesn't exist.\n->{operandTexts[0]}");
+                        // site caller in pre-parse
+                        switch (opcode)
+                        {
+                            case OpcodeType.JO:
+                            case OpcodeType.JNO:
+                            case OpcodeType.JB:
+                            case OpcodeType.JAE:
+                            case OpcodeType.JE:
+                            case OpcodeType.JNE:
+                            case OpcodeType.JBE:
+                            case OpcodeType.JA:
+                            case OpcodeType.JS:
+                            case OpcodeType.JNS:
+                            case OpcodeType.JP:
+                            case OpcodeType.JNP:
+                            case OpcodeType.JL:
+                            case OpcodeType.JGE:
+                            case OpcodeType.JLE:
+                            case OpcodeType.JG:
+                            case OpcodeType.JECXZ:
+                            case OpcodeType.JMP:
+                                return new Site(operandTexts[0], 0);
+
+                            default:
+                                throw new Exception($"[VariableGetError] variable doesn't exist.\n->{operandTexts[0]}");
+                        }
+                    }
+                    else if(parseType == ParseType.Real)
+                    {
+                        // site caller in real-parse
+                        if (AddressManager.TryGetSite(operandTexts[0], out Site site))
+                        {
+                            return site;
+                        }
+                        else
+                        {
+                            throw new Exception($"[SiteGetError] site doesn't exist.\n->{operandTexts[0]}");
+                        }
                     }
                 }
             }

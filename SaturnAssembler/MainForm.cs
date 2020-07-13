@@ -75,7 +75,7 @@ namespace SaturnAssembler
 
         void LoadInitialAssemblyFile()
         {
-            BindFilePath = @"C:\Users\dongb\OneDrive\Desktop\test.asm";
+            BindFilePath = @"C:\Users\dongb\OneDrive\Desktop\test2.asm";
             FileName = BindFilePath.Substring(BindFilePath.LastIndexOf('\\') + 1).Replace(".asm", "");
             filename.Text = FileName;
             richTextBox.Text = File.ReadAllText(BindFilePath);
@@ -169,7 +169,7 @@ namespace SaturnAssembler
                 var dataSectionRawSize = AddressManager.GetSectionRawSize(dataBytesTemp);
 
                 /* Real Parse */
-                var (instructions, variables) = AssemblyParser.Parse(richTextBox.Text, textSectionRawSize, dataSectionRawSize);
+                var (instructions, variables) = AssemblyParser.Parse(richTextBox.Text, AssemblyParser.ParseType.Real, textSectionRawSize, dataSectionRawSize);
 
                 var assemblyBytes = AssembleHelper.BuildAssemblyBytes(instructions);
                 var dataBytes = AssembleHelper.BuildDataBytes(variables);
@@ -191,7 +191,7 @@ namespace SaturnAssembler
 
         (byte[], byte[]) PreParse()
         {
-            var (instructions, variables) = AssemblyParser.Parse(richTextBox.Text);
+            var (instructions, variables) = AssemblyParser.Parse(richTextBox.Text, AssemblyParser.ParseType.Pre);
 
             var assemblyBytes = AssembleHelper.BuildAssemblyBytes(instructions);
             var dataBytes = AssembleHelper.BuildDataBytes(variables);

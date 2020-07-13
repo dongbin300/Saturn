@@ -28,43 +28,100 @@ namespace Saturn.Build.Assemble
         public static uint DataSectionRawSize; // 0x00000200
         public static uint DataSectionRawPointer; // 0x00000400
 
-        public List<Variable> Variables;
+        public static List<Instruction> Instructions;
+        public static List<Variable> Variables;
+        public static List<Site> Sites;
 
-        public uint DataSectionCurrentAddress;
+        public static uint TextSectionCurrentAddress;
+        public static uint DataSectionCurrentAddress;
 
-        public AddressManager()
+        /// <summary>
+        /// First Initialize without SectionRawSizes in pre-parse
+        /// Second Initialize with SectionRawSizes in real parse
+        /// </summary>
+        /// <param name="textSectionRawSize"></param>
+        /// <param name="dataSectionRawSize"></param>
+        public static void Initialize(uint textSectionRawSize = 0, uint dataSectionRawSize = 0)
         {
+            Instructions = new List<Instruction>();
             Variables = new List<Variable>();
+
+            if(textSectionRawSize == 0 && dataSectionRawSize == 0)
+            {
+                Sites = new List<Site>();
+            }
 
             TextSectionSize = 0x00001000;
             DataSectionSize = 0x00001000;
             TextSectionRVA = EntryPointAddress;
             DataSectionRVA = TextSectionRVA + TextSectionSize;
-            TextSectionRawSize = 0x00000200;
-            DataSectionRawSize = 0x00000200;
+            TextSectionRawSize = textSectionRawSize == 0 ? 0x00000200 : textSectionRawSize;
+            DataSectionRawSize = dataSectionRawSize == 0 ? 0x00000200 : dataSectionRawSize;
             TextSectionRawPointer = 0x00000200;
             DataSectionRawPointer = TextSectionRawPointer + TextSectionRawSize;
 
+            TextSectionCurrentAddress = (BuildEnvironment.format == BuildEnvironment.PEFormat.PE32 ? ImageBaseAddress : (uint)ImageBase64Address) + TextSectionRVA;
             DataSectionCurrentAddress = (BuildEnvironment.format == BuildEnvironment.PEFormat.PE32 ? ImageBaseAddress : (uint)ImageBase64Address) + DataSectionRVA;
         }
 
-        public AddressManager(uint textSectionRawSize, uint dataSectionRawSize)
+        public static void AddInstruction(OpcodeType opcode, object operand1 = null, object operand2 = null)
         {
-            Variables = new List<Variable>();
+            switch (opcode)
+            {
+                case OpcodeType.PUSH:
+                case OpcodeType.JO:
+                case OpcodeType.JNO:
+                case OpcodeType.JB:
+                case OpcodeType.JAE:
+                case OpcodeType.JE:
+                case OpcodeType.JNE:
+                case OpcodeType.JBE:
+                case OpcodeType.JA:
+                case OpcodeType.JS:
+                case OpcodeType.JNS:
+                case OpcodeType.JP:
+                case OpcodeType.JNP:
+                case OpcodeType.JL:
+                case OpcodeType.JGE:
+                case OpcodeType.JLE:
+                case OpcodeType.JG:
+                case OpcodeType.INT:
+                case OpcodeType.AAM:
+                case OpcodeType.AAD:
+                case OpcodeType.LOOPNE:
+                case OpcodeType.LOOPE:
+                case OpcodeType.LOOP:
+                case OpcodeType.JECXZ:
+                case OpcodeType.JMP:
+                    if (operand1 is Site site)
+                    {
+                        // site caller in pre-parse
+                        if(site.Address == 0)
+                        {
+                            TextSectionCurrentAddress += 2;
+                            return;
+                        }
 
-            TextSectionSize = 0x00001000;
-            DataSectionSize = 0x00001000;
-            TextSectionRVA = EntryPointAddress;
-            DataSectionRVA = TextSectionRVA + TextSectionSize;
-            TextSectionRawSize = textSectionRawSize;
-            DataSectionRawSize = dataSectionRawSize;
-            TextSectionRawPointer = 0x00000200;
-            DataSectionRawPointer = TextSectionRawPointer + TextSectionRawSize;
-            
-            DataSectionCurrentAddress = (BuildEnvironment.format == BuildEnvironment.PEFormat.PE32 ? ImageBaseAddress : (uint)ImageBase64Address) + DataSectionRVA;
+                        // site caller in real-parse
+                        operand1 = GetJumpValue(site);
+
+                        Instruction instruction1 = new Instruction(opcode, operand1, operand2, TextSectionCurrentAddress);
+                        Instructions.Add(instruction1);
+
+                        TextSectionCurrentAddress += (uint)instruction1.MachineCode.Bytes.Length;
+                    }
+                    break;
+
+                default:
+                    Instruction instruction = new Instruction(opcode, operand1, operand2, TextSectionCurrentAddress);
+                    Instructions.Add(instruction);
+
+                    TextSectionCurrentAddress += (uint)instruction.MachineCode.Bytes.Length;
+                    break;
+            }
         }
 
-        public void AddVariable(DataType dataType, string name, object value)
+        public static void AddVariable(DataType dataType, string name, object value)
         {
             Variable variable = new Variable(dataType, name, value, DataSectionCurrentAddress);
             
@@ -80,9 +137,35 @@ namespace Saturn.Build.Assemble
             };
         }
 
-        public bool IsExistVariable(string variableName) => GetVariable(variableName) != null;
+        public static void AddSite(string name)
+        {
+            Site site = new Site(name, TextSectionCurrentAddress);
 
-        public Variable GetVariable(string variableName) => Variables.Find(v => v.Name.Equals(variableName));
+            Sites.Add(site);
+        }
+        
+        public static bool IsExistVariable(string variableName) => Variables.Find(v => v.Name.Equals(variableName)) != null;
+
+        public static bool IsExistSite(string siteName) => Sites.Find(s => s.Name.Equals(siteName)) != null;
+
+        public static bool TryGetVariable(string variableName, out Variable variable)
+        {
+            variable = Variables.Find(v => v.Name.Equals(variableName));
+
+            return variable != null;
+        }
+
+        public static bool TryGetSite(string siteName, out Site site)
+        {
+            site = Sites.Find(v => v.Name.Equals(siteName));
+
+            return site != null;
+        }
+
+        public static byte GetJumpValue(Site site)
+        {
+            return (byte)(site.Address - TextSectionCurrentAddress - 2);
+        }
 
         public static uint GetSectionRawSize(byte[] bytes) => BitUtil.SufficientValue((uint)bytes.Length, 9);
     }
