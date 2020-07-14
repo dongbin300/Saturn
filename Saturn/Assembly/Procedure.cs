@@ -4,24 +4,21 @@ using System.Text;
 
 namespace Saturn.Assembly
 {
-    public class Site
+    public class Procedure : Site
     {
-        public string Name { get; set; }
-        public uint Address { get; set; }
-
-        public Site()
+        public Procedure()
         {
             Name = string.Empty;
             Address = 0;
         }
 
-        public Site(string name)
+        public Procedure(string name) : base (name)
         {
             Name = name;
             Address = 0;
         }
 
-        public Site(string name, uint address)
+        public Procedure(string name, uint address) : base(name, address)
         {
             Name = name;
             Address = address;

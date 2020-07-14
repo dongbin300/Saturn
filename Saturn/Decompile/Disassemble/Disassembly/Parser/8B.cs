@@ -1,4 +1,6 @@
-﻿namespace Saturn.Decompile.Disassemble.Disassembly.Parser
+﻿using static Saturn.Util.StringUtil;
+
+namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
     public class _8B
     {
@@ -6,7 +8,7 @@
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "00":
                     DisassemblyHelper.SetDisassemblyString("MOV EAX, DWORD PTR DS:[EAX]");
@@ -23,7 +25,7 @@
                 case "14":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "39":
                             DisassemblyHelper.SetDisassemblyString("MOV EDX, DWORD PTR DS:[ECX+EDI]");
@@ -41,7 +43,7 @@
                 case "44":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "39":
                             DisassemblyHelper.SetDisassemblyString("MOV EAX, DWORD PTR DS:[ECX+EDI{0}]",  DisassemblyHelper.OperandType.SH8);

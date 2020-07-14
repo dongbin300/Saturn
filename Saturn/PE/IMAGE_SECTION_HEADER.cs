@@ -1,7 +1,8 @@
 ﻿using Saturn.Build.Assemble;
 using System;
 using System.Collections.Generic;
-using static Saturn.Util;
+using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
 
 namespace Saturn.PE
 {

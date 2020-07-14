@@ -47,6 +47,9 @@ namespace SaturnAssembler
             //richTextBox.BackColor = Color.FromArgb(44, 44, 44);
 
             richTextBox.Settings.Keywords.Add("PTR");
+            richTextBox.Settings.Keywords.Add(IAssembly.PROCEDURE_KEYWORD);
+            richTextBox.Settings.Keywords.Add(IAssembly.PROCEDURE_END_KEYWORD);
+            richTextBox.Settings.Keywords.Add(IAssembly.ENTRY_PROCEDURE_NAME);
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.OpcodeType)).ToList());
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.DataType)).ToList());
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.R8)).ToList());

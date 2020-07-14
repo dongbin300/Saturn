@@ -1,4 +1,6 @@
-﻿namespace Saturn.Decompile.Disassemble.Disassembly.Parser
+﻿using static Saturn.Util.StringUtil;
+
+namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
     public class _39
     {
@@ -6,7 +8,7 @@
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "05":
                     DisassemblyHelper.SetDisassemblyString("CMP DWORD PTR DS:[{0}], EAX", DisassemblyHelper.OperandType.LE32);

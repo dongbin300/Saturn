@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Saturn.Assembly.IAssembly;
-using static Saturn.Util;
+using static Saturn.Util.StringUtil;
 
 namespace Saturn.Build.Assemble
 {
@@ -44,7 +44,7 @@ namespace Saturn.Build.Assemble
 
             try
             {
-                string[] instructionTexts = assemblyText.ToUpper().Split(new string[] { "\n" }, StringSplitOptions.None);
+                string[] instructionTexts = assemblyText.ToUpper().Split(new string[] { "\n" }, StringSplitOptions.None).Select(p=>p.Trim()).ToArray();
 
                 foreach (string instructionText in instructionTexts)
                 {
@@ -59,7 +59,7 @@ namespace Saturn.Build.Assemble
 
                     int firstSpaceIndex = instructionTextExcludeComment.IndexOf(' ');
 
-                    if (firstSpaceIndex == -1)
+                    if (firstSpaceIndex == -1) // 1 Word
                     {
                         object head = ParseHead(instructionTextExcludeComment);
 
@@ -67,14 +67,22 @@ namespace Saturn.Build.Assemble
                         {
                             AddressManager.AddInstruction(opcode);
                         }
-                        else if (head is string siteName) // Site
+                        else if (head is Site site) // Site
                         {
-                            AddressManager.AddSite(siteName);
+                            if(parseType == ParseType.Pre)
+                            {
+                                if (AddressManager.IsExistSite(site.Name))
+                                {
+                                    throw new Exception("[SiteNameOverlap] site already exists.");
+                                }
+
+                                AddressManager.AddSite(site);
+                            }
                         }
                     }
-                    else
+                    else // 1+ Words
                     {
-                        string headText = instructionTextExcludeComment.Substring(0, firstSpaceIndex).Trim();
+                        string headText = instructionTextExcludeComment.Substring(0, firstSpaceIndex);
                         object head = ParseHead(headText);
 
                         if (head is OpcodeType opcode)
@@ -150,6 +158,36 @@ namespace Saturn.Build.Assemble
                                 }
                             }
                         }
+
+                        else if (head is Procedure procedure)
+                        {
+                            string procedureText = instructionTextExcludeComment.Substring(firstSpaceIndex + 1).Trim();
+                            string[] procedureTexts = procedureText.Split(',').Select(p => p.Trim()).ToArray();
+
+                            if (procedureTexts.Length == 1) // PRCD + ...
+                            {
+                                string procedureName = procedureTexts[0];
+
+                                if (procedureName.Equals(PROCEDURE_END_KEYWORD)) // PRCD END
+                                {
+                                    AddressManager.AddInstruction(OpcodeType.RET);
+                                }
+                                else // PRCD + Procedure Name
+                                {
+                                    if (parseType == ParseType.Pre)
+                                    {
+                                        if (AddressManager.IsExistProcedure(procedureName))
+                                        {
+                                            throw new Exception("[ProcedureNameOverlap] procedure already exists.");
+                                        }
+
+                                        procedure.Name = procedureName;
+
+                                        AddressManager.AddProcedure(procedure);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -169,15 +207,26 @@ namespace Saturn.Build.Assemble
         ///     -BYTE, WORD, DWORD, QWORD
         /// iii) Site
         ///     -LOCATION1:, GOOD:, TRUE:, ...
+        /// iv) Procedure
+        ///     -PRCD sum
+        ///         ...
+        ///         ...
+        ///      PRCD END
         /// </summary>
         /// <param name="headText"></param>
         /// <returns></returns>
         static object ParseHead(string headText)
         {
             // iii) Site
-            if (headText.Contains(":"))
+            if (headText.Contains(SITE_TOKEN))
             {
-                return headText.Replace(":", "").Trim();
+                return new Site(headText.Replace(SITE_TOKEN, ""));
+            }
+
+            // iv) Procedure
+            if (headText.Equals(PROCEDURE_KEYWORD))
+            {
+                return new Procedure();
             }
 
             // i) Opcode
@@ -211,6 +260,11 @@ namespace Saturn.Build.Assemble
         ///     -11, 12, 13, 14, ...
         /// vii) Site Type
         ///     -LOCATION1:, GOOD:, TRUE:, ...
+        /// viii) Procedure Type
+        ///     -PRCD sum
+        ///         ...
+        ///         ...
+        ///      PRCD END
         /// *) Special Case
         /// </summary>
         /// <param name="operandText"></param>
@@ -222,7 +276,7 @@ namespace Saturn.Build.Assemble
             if (operandTexts.Length == 1) // not PTR operand
             {
                 // 175, 0x1034, ...
-                if (StringUtil.IsHexaDecimalString(operandTexts[0]))
+                if (IsHexaDecimalString(operandTexts[0]))
                 {
                     // *) Special Case
                     switch (opcode)
@@ -342,11 +396,12 @@ namespace Saturn.Build.Assemble
                     }
 
                     // vii) Site Type
+                    // viii) Procedure Type
                     if (parseType == ParseType.Pre)
                     {
-                        // site caller in pre-parse
                         switch (opcode)
                         {
+                            // site caller in pre-parse
                             case OpcodeType.JO:
                             case OpcodeType.JNO:
                             case OpcodeType.JB:
@@ -367,6 +422,10 @@ namespace Saturn.Build.Assemble
                             case OpcodeType.JMP:
                                 return new Site(operandTexts[0], 0);
 
+                            // procedure caller in pre-parse
+                            case OpcodeType.CALL:
+                                return new Procedure(operandTexts[0], 0);
+
                             default:
                                 throw new Exception($"[VariableGetError] variable doesn't exist.\n->{operandTexts[0]}");
                         }
@@ -378,9 +437,14 @@ namespace Saturn.Build.Assemble
                         {
                             return site;
                         }
+                        // procedure caller in real-parse
+                        else if(AddressManager.TryGetProcedure(operandTexts[0], out Procedure procedure))
+                        {
+                            return procedure;
+                        }
                         else
                         {
-                            throw new Exception($"[SiteGetError] site doesn't exist.\n->{operandTexts[0]}");
+                            throw new Exception($"[SiteProcedureGetError] site or procedure doesn't exist.\n->{operandTexts[0]}");
                         }
                     }
                 }

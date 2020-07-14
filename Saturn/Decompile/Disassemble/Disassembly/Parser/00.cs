@@ -1,4 +1,6 @@
-﻿namespace Saturn.Decompile.Disassemble.Disassembly.Parser
+﻿using static Saturn.Util.StringUtil;
+
+namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
     public class _00
     {
@@ -6,7 +8,7 @@
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "00":
                     DisassemblyHelper.SetDisassemblyString("ADD BYTE PTR DS:[EAX], AL");
@@ -23,7 +25,7 @@
                 case "6C":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "B1":
                             DisassemblyHelper.SetDisassemblyString("ADD BYTE PTR DS:[ECX+ESI*4{0}], CH", DisassemblyHelper.OperandType.SH8);
@@ -41,7 +43,7 @@
                 case "74":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "65":
                             DisassemblyHelper.SetDisassemblyString("ADD BYTE PTR SS:[EBP{0}], DH", DisassemblyHelper.OperandType.SH8);

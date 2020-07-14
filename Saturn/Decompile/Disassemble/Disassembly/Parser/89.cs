@@ -1,4 +1,6 @@
-﻿namespace Saturn.Decompile.Disassemble.Disassembly.Parser
+﻿using static Saturn.Util.StringUtil;
+
+namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
     public class _89
     {
@@ -6,12 +8,12 @@
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "04":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "24":
                             Disassembly.DisassemblyHelper.SetDisassemblyString("MOV DWORD PTR SS:[ESP], EAX");

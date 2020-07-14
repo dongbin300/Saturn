@@ -1,8 +1,9 @@
-﻿using Saturn;
-using Saturn.Decompile.Disassemble;
+﻿using Saturn.Decompile.Disassemble;
 using Saturn.Decompile.Disassemble.Disassembly;
 using System;
 using System.Windows.Forms;
+using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
 
 namespace SaturnDecompiler
 {
@@ -51,8 +52,8 @@ namespace SaturnDecompiler
             // 3. 화면에 표시
             foreach (Instruction i in instructions)
             {
-                string addressString = Util.GetHexString(Util.ReverseBytes(BitConverter.GetBytes(i.Address)));
-                string byteString = Util.GetHexString(i.Bytes);
+                string addressString = GetHexString(ReverseBytes(BitConverter.GetBytes(i.Address)));
+                string byteString = GetHexString(i.Bytes);
                 string disassemblyString = i.Disassembly;
 
                 dataGrid.Rows.Add(new string[]

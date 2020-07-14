@@ -1,4 +1,5 @@
 ﻿using System;
+using static Saturn.Util.StringUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
@@ -8,17 +9,17 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "1A":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "44":
                             DisassemblyHelper.GetOpcode();
 
-                            switch (Util.GetHexString(DisassemblyHelper.opcode4))
+                            switch (GetHexString(DisassemblyHelper.opcode4))
                             {
                                 case "04":
                                     DisassemblyHelper.SetDisassemblyString("BNDLDX BND0, SS:[ESP+EAX{0}]", DisassemblyHelper.OperandType.SH8);
@@ -37,12 +38,12 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "1B":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "04":
                             DisassemblyHelper.GetOpcode();
 
-                            switch (Util.GetHexString(DisassemblyHelper.opcode4))
+                            switch (GetHexString(DisassemblyHelper.opcode4))
                             {
                                 case "04":
                                     DisassemblyHelper.SetDisassemblyString("BNDSTX SS:[ESP+EAX], BND0");
@@ -69,7 +70,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "B6":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "11":
                             DisassemblyHelper.SetDisassemblyString("MOVZX EDX, BYTE PTR DS:[ECX]");

@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using static Saturn.Util;
+using static Saturn.Util.ByteUtil;
+using static Saturn.Util.StringUtil;
 
 namespace Saturn.MachineCode
 {
     public class AssemblyHex
     {
-        [Flags]
-        public enum TemporaryState
-        {
-            None,
-            Jump
-        }
-
         /// <summary>
         /// Flexible size
         /// Max 4 Bytes
@@ -35,7 +27,6 @@ namespace Saturn.MachineCode
 
         public string String => ToString();
         public byte[] Bytes => ToBytes();
-        public TemporaryState TempState { get; set; }
 
         /// <summary>
         /// If opcode starts with 0x00 byte, must set opcodeSize
@@ -108,17 +99,6 @@ namespace Saturn.MachineCode
                     _ => null
                 }
             };
-
-            TempState = TemporaryState.None;
-        }
-
-        /// <summary>
-        /// Set the incomprehensible assembly to a temporary state
-        /// </summary>
-        /// <param name="state"></param>
-        public AssemblyHex(TemporaryState state, string operand1)
-        {
-            TempState = state;
         }
 
         new string ToString()

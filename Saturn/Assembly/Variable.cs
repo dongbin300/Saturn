@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using static Saturn.Assembly.IAssembly;
-using static Saturn.Util;
+using static Saturn.Util.ByteUtil;
+using static Saturn.Util.StringUtil;
 
 namespace Saturn.Assembly
 {

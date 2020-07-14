@@ -6,7 +6,9 @@ using System.Text;
 using SimplePerformanceChecker;
 using Saturn;
 using System.Runtime.CompilerServices;
-using static Saturn.Util;
+using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
+using static Saturn.Util.BitUtil;
 using System.Text.RegularExpressions;
 
 namespace PETest

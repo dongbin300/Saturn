@@ -1,8 +1,7 @@
 ﻿using Saturn.Assembly;
-using Saturn.Build;
-using static Saturn.Assembly.IAssembly;
-using System.Reflection.Metadata.Ecma335;
 using System.Collections.Generic;
+using static Saturn.Assembly.IAssembly;
+using static Saturn.Util.BitUtil;
 
 namespace Saturn.Build.Assemble
 {
@@ -31,6 +30,7 @@ namespace Saturn.Build.Assemble
         public static List<Instruction> Instructions;
         public static List<Variable> Variables;
         public static List<Site> Sites;
+        public static List<Procedure> Procedures;
 
         public static uint TextSectionCurrentAddress;
         public static uint DataSectionCurrentAddress;
@@ -49,11 +49,12 @@ namespace Saturn.Build.Assemble
             if(textSectionRawSize == 0 && dataSectionRawSize == 0)
             {
                 Sites = new List<Site>();
+                Procedures = new List<Procedure>();
             }
 
             TextSectionSize = 0x00001000;
             DataSectionSize = 0x00001000;
-            TextSectionRVA = EntryPointAddress;
+            TextSectionRVA = SectionAlignment;
             DataSectionRVA = TextSectionRVA + TextSectionSize;
             TextSectionRawSize = textSectionRawSize == 0 ? 0x00000200 : textSectionRawSize;
             DataSectionRawSize = dataSectionRawSize == 0 ? 0x00000200 : dataSectionRawSize;
@@ -68,7 +69,6 @@ namespace Saturn.Build.Assemble
         {
             switch (opcode)
             {
-                case OpcodeType.PUSH:
                 case OpcodeType.JO:
                 case OpcodeType.JNO:
                 case OpcodeType.JB:
@@ -85,15 +85,9 @@ namespace Saturn.Build.Assemble
                 case OpcodeType.JGE:
                 case OpcodeType.JLE:
                 case OpcodeType.JG:
-                case OpcodeType.INT:
-                case OpcodeType.AAM:
-                case OpcodeType.AAD:
-                case OpcodeType.LOOPNE:
-                case OpcodeType.LOOPE:
-                case OpcodeType.LOOP:
                 case OpcodeType.JECXZ:
                 case OpcodeType.JMP:
-                    if (operand1 is Site site)
+                    if (operand1 is Site site) // JMP + Site Name
                     {
                         // site caller in pre-parse
                         if(site.Address == 0)
@@ -109,6 +103,26 @@ namespace Saturn.Build.Assemble
                         Instructions.Add(instruction1);
 
                         TextSectionCurrentAddress += (uint)instruction1.MachineCode.Bytes.Length;
+                    }
+                    break;
+
+                case OpcodeType.CALL:
+                    if (operand1 is Procedure procedure) // CALL + Procedure Name
+                    {
+                        // procedure caller in pre-parse
+                        if(procedure.Address == 0)
+                        {
+                            TextSectionCurrentAddress += 5;
+                            return;
+                        }
+
+                        // procedure caller in real-parse
+                        operand1 = GetCallValue(procedure);
+
+                        Instruction instruction2 = new Instruction(opcode, operand1, operand2, TextSectionCurrentAddress);
+                        Instructions.Add(instruction2);
+
+                        TextSectionCurrentAddress += (uint)instruction2.MachineCode.Bytes.Length;
                     }
                     break;
 
@@ -137,16 +151,31 @@ namespace Saturn.Build.Assemble
             };
         }
 
-        public static void AddSite(string name)
+        public static void AddSite(Site site)
         {
-            Site site = new Site(name, TextSectionCurrentAddress);
+            site.Address = TextSectionCurrentAddress;
 
             Sites.Add(site);
         }
-        
+
+        public static void AddProcedure(Procedure procedure)
+        {
+            procedure.Address = TextSectionCurrentAddress;
+
+            Procedures.Add(procedure);
+
+            // Set EntryPoint Address due to entry procedure
+            if (procedure.Name.Equals(ENTRY_PROCEDURE_NAME))
+            {
+                EntryPointAddress = procedure.Address - ImageBaseAddress;
+            }
+        }
+
         public static bool IsExistVariable(string variableName) => Variables.Find(v => v.Name.Equals(variableName)) != null;
 
         public static bool IsExistSite(string siteName) => Sites.Find(s => s.Name.Equals(siteName)) != null;
+
+        public static bool IsExistProcedure(string procedureName) => Procedures.Find(p => p.Name.Equals(procedureName)) != null;
 
         public static bool TryGetVariable(string variableName, out Variable variable)
         {
@@ -157,9 +186,16 @@ namespace Saturn.Build.Assemble
 
         public static bool TryGetSite(string siteName, out Site site)
         {
-            site = Sites.Find(v => v.Name.Equals(siteName));
+            site = Sites.Find(s => s.Name.Equals(siteName));
 
             return site != null;
+        }
+
+        public static bool TryGetProcedure(string procedureName, out Procedure procedure)
+        {
+            procedure = Procedures.Find(p => p.Name.Equals(procedureName));
+
+            return procedure != null;
         }
 
         public static byte GetJumpValue(Site site)
@@ -167,6 +203,11 @@ namespace Saturn.Build.Assemble
             return (byte)(site.Address - TextSectionCurrentAddress - 2);
         }
 
-        public static uint GetSectionRawSize(byte[] bytes) => BitUtil.SufficientValue((uint)bytes.Length, 9);
+        public static int GetCallValue(Procedure procedure)
+        {
+            return (int)(procedure.Address - TextSectionCurrentAddress - 5);
+        }
+
+        public static uint GetSectionRawSize(byte[] bytes) => SufficientValue((uint)bytes.Length, 9);
     }
 }

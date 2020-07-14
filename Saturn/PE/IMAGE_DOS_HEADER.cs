@@ -1,4 +1,5 @@
-﻿using static Saturn.Util;
+﻿using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
 
 namespace Saturn.PE
 {

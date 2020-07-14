@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Saturn.Decompile.Disassemble.Disassembly.Parser
+﻿namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
     public class _68
     {

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using static Saturn.Util.StringUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
@@ -8,12 +8,12 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "04":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "00":
                             DisassemblyHelper.SetDisassemblyString("INC DWORD PTR DS:[EAX+EAX]");
@@ -35,7 +35,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "64":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "00":
                             DisassemblyHelper.SetDisassemblyString("JMP DWORD PTR DS:[EAX+EAX{0}]", DisassemblyHelper.OperandType.SH8);
@@ -49,7 +49,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "74":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "39":
                             DisassemblyHelper.SetDisassemblyString("PUSH DWORD PTR DS:[ECX+EDI{0}]", DisassemblyHelper.OperandType.SH8);

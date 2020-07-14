@@ -1,4 +1,4 @@
-﻿using System;
+﻿using static Saturn.Util.StringUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
@@ -8,7 +8,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "1C":
                     DisassemblyHelper.SetDisassemblyString("SBB AL, {0}", DisassemblyHelper.OperandType.LE8);

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Drawing;
 using System.ComponentModel;
+using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly
 {
@@ -74,7 +76,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                     // parse hex
                     try
                     {
-                        Type t = Type.GetType("Saturn.Decompile.Disassemble.Disassembly.Parser._" + Util.GetHexString(opcode1));
+                        Type t = Type.GetType("Saturn.Decompile.Disassemble.Disassembly.Parser._" + GetHexString(opcode1));
                         MethodInfo method = t.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public);
                         method.Invoke(null, null);
                     }
@@ -150,12 +152,12 @@ namespace Saturn.Decompile.Disassemble.Disassembly
             switch (count)
             {
                 case 1:
-                    operand1 = Util.GetBytes(data, i, 4);
+                    operand1 = GetBytes(data, i, 4);
                     i += 4;
                     break;
                 case 2:
-                    operand1 = Util.GetBytes(data, i, 4);
-                    operand2 = Util.GetBytes(data, i + 4, 4);
+                    operand1 = GetBytes(data, i, 4);
+                    operand2 = GetBytes(data, i + 4, 4);
                     i += 8;
                     break;
                 default:
@@ -168,12 +170,12 @@ namespace Saturn.Decompile.Disassemble.Disassembly
             switch (count)
             {
                 case 1:
-                    operand1 = Util.GetBytes(data, i, 2);
+                    operand1 = GetBytes(data, i, 2);
                     i += 2;
                     break;
                 case 2:
-                    operand1 = Util.GetBytes(data, i, 2);
-                    operand2 = Util.GetBytes(data, i + 2, 2);
+                    operand1 = GetBytes(data, i, 2);
+                    operand2 = GetBytes(data, i + 2, 2);
                     i += 4;
                     break;
                 default:
@@ -186,12 +188,12 @@ namespace Saturn.Decompile.Disassemble.Disassembly
             switch (count)
             {
                 case 1:
-                    operand1 = Util.GetBytes(data, i, 1);
+                    operand1 = GetBytes(data, i, 1);
                     i++;
                     break;
                 case 2:
-                    operand1 = Util.GetBytes(data, i, 1);
-                    operand2 = Util.GetBytes(data, i + 1, 1);
+                    operand1 = GetBytes(data, i, 1);
+                    operand2 = GetBytes(data, i + 1, 1);
                     i += 2;
                     break;
                 default:
@@ -250,18 +252,18 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                 case OperandType.SH8:
                 case OperandType.SH16:
                 case OperandType.SH32:
-                    return Util.UnsignedToSignedHexString(operand);
+                    return UnsignedToSignedHexString(operand);
                 case OperandType.LE8:
-                    return Util.GetHexString(operand);
+                    return GetHexString(operand);
                 case OperandType.LE16:
                 case OperandType.LE32:
-                    return Util.GetHexString(Util.ReverseBytes(operand));
+                    return GetHexString(ReverseBytes(operand));
                 case OperandType.J8:
-                    return Util.GetHexString(Util.ReverseBytes(BitConverter.GetBytes((byte)(currentAddress + operand[0] + GetOpcodeCount() + 1))));
+                    return GetHexString(ReverseBytes(BitConverter.GetBytes((byte)(currentAddress + operand[0] + GetOpcodeCount() + 1))));
                 case OperandType.J16:
-                    return Util.GetHexString(Util.ReverseBytes(BitConverter.GetBytes((ushort)(currentAddress + BitConverter.ToUInt32(operand) + GetOpcodeCount() + 2))));
+                    return GetHexString(ReverseBytes(BitConverter.GetBytes((ushort)(currentAddress + BitConverter.ToUInt32(operand) + GetOpcodeCount() + 2))));
                 case OperandType.J32:
-                    return Util.GetHexString(Util.ReverseBytes(BitConverter.GetBytes((uint)(currentAddress + BitConverter.ToUInt32(operand) + GetOpcodeCount() + 4))));
+                    return GetHexString(ReverseBytes(BitConverter.GetBytes((uint)(currentAddress + BitConverter.ToUInt32(operand) + GetOpcodeCount() + 4))));
                 default:
                     return string.Empty;
             }
@@ -292,7 +294,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                     break;
             }
 
-            var operand = Util.GetBytes(data, i, byteSize);
+            var operand = GetBytes(data, i, byteSize);
             switch (operandNumber)
             {
                 case 1:
@@ -323,25 +325,25 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                     switch (count)
                     {
                         case 1:
-                            operand1 = Util.GetBytes(data, i, 1);
+                            operand1 = GetBytes(data, i, 1);
                             i++;
                             break;
                         case 2:
-                            operand1 = Util.GetBytes(data, i, 1);
-                            operand2 = Util.GetBytes(data, i + 1, 1);
+                            operand1 = GetBytes(data, i, 1);
+                            operand2 = GetBytes(data, i + 1, 1);
                             i += 2;
                             break;
                         case 3:
-                            operand1 = Util.GetBytes(data, i, 1);
-                            operand2 = Util.GetBytes(data, i + 1, 1);
-                            operand3 = Util.GetBytes(data, i + 2, 1);
+                            operand1 = GetBytes(data, i, 1);
+                            operand2 = GetBytes(data, i + 1, 1);
+                            operand3 = GetBytes(data, i + 2, 1);
                             i += 3;
                             break;
                         case 4:
-                            operand1 = Util.GetBytes(data, i, 1);
-                            operand2 = Util.GetBytes(data, i + 1, 1);
-                            operand3 = Util.GetBytes(data, i + 2, 1);
-                            operand4 = Util.GetBytes(data, i + 3, 1);
+                            operand1 = GetBytes(data, i, 1);
+                            operand2 = GetBytes(data, i + 1, 1);
+                            operand3 = GetBytes(data, i + 2, 1);
+                            operand4 = GetBytes(data, i + 3, 1);
                             i += 4;
                             break;
                         default:
@@ -355,25 +357,25 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                     switch (count)
                     {
                         case 1:
-                            operand1 = Util.GetBytes(data, i, 2);
+                            operand1 = GetBytes(data, i, 2);
                             i += 2;
                             break;
                         case 2:
-                            operand1 = Util.GetBytes(data, i, 2);
-                            operand2 = Util.GetBytes(data, i + 2, 2);
+                            operand1 = GetBytes(data, i, 2);
+                            operand2 = GetBytes(data, i + 2, 2);
                             i += 4;
                             break;
                         case 3:
-                            operand1 = Util.GetBytes(data, i, 2);
-                            operand2 = Util.GetBytes(data, i + 2, 2);
-                            operand3 = Util.GetBytes(data, i + 4, 2);
+                            operand1 = GetBytes(data, i, 2);
+                            operand2 = GetBytes(data, i + 2, 2);
+                            operand3 = GetBytes(data, i + 4, 2);
                             i += 6;
                             break;
                         case 4:
-                            operand1 = Util.GetBytes(data, i, 2);
-                            operand2 = Util.GetBytes(data, i + 2, 2);
-                            operand3 = Util.GetBytes(data, i + 4, 2);
-                            operand4 = Util.GetBytes(data, i + 6, 2);
+                            operand1 = GetBytes(data, i, 2);
+                            operand2 = GetBytes(data, i + 2, 2);
+                            operand3 = GetBytes(data, i + 4, 2);
+                            operand4 = GetBytes(data, i + 6, 2);
                             i += 8;
                             break;
                         default:
@@ -387,25 +389,25 @@ namespace Saturn.Decompile.Disassemble.Disassembly
                     switch (count)
                     {
                         case 1:
-                            operand1 = Util.GetBytes(data, i, 4);
+                            operand1 = GetBytes(data, i, 4);
                             i += 4;
                             break;
                         case 2:
-                            operand1 = Util.GetBytes(data, i, 4);
-                            operand2 = Util.GetBytes(data, i + 4, 4);
+                            operand1 = GetBytes(data, i, 4);
+                            operand2 = GetBytes(data, i + 4, 4);
                             i += 8;
                             break;
                         case 3:
-                            operand1 = Util.GetBytes(data, i, 4);
-                            operand2 = Util.GetBytes(data, i + 4, 4);
-                            operand3 = Util.GetBytes(data, i + 8, 4);
+                            operand1 = GetBytes(data, i, 4);
+                            operand2 = GetBytes(data, i + 4, 4);
+                            operand3 = GetBytes(data, i + 8, 4);
                             i += 12;
                             break;
                         case 4:
-                            operand1 = Util.GetBytes(data, i, 4);
-                            operand2 = Util.GetBytes(data, i + 4, 4);
-                            operand3 = Util.GetBytes(data, i + 8, 4);
-                            operand4 = Util.GetBytes(data, i + 12, 4);
+                            operand1 = GetBytes(data, i, 4);
+                            operand2 = GetBytes(data, i + 4, 4);
+                            operand3 = GetBytes(data, i + 8, 4);
+                            operand4 = GetBytes(data, i + 12, 4);
                             i += 16;
                             break;
                         default:
@@ -454,22 +456,22 @@ namespace Saturn.Decompile.Disassemble.Disassembly
         {
             if (size1 != 0)
             {
-                operand1 = Util.GetBytes(data, i, size1);
+                operand1 = GetBytes(data, i, size1);
                 i += size1;
             }
             if (size2 != 0)
             {
-                operand2 = Util.GetBytes(data, i, size2);
+                operand2 = GetBytes(data, i, size2);
                 i += size2;
             }
             if (size3 != 0)
             {
-                operand3 = Util.GetBytes(data, i, size3);
+                operand3 = GetBytes(data, i, size3);
                 i += size3;
             }
             if (size4 != 0)
             {
-                operand4 = Util.GetBytes(data, i, size4);
+                operand4 = GetBytes(data, i, size4);
                 i += size4;
             }
         }

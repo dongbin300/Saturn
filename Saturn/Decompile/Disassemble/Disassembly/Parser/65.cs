@@ -1,4 +1,4 @@
-﻿using System;
+﻿using static Saturn.Util.StringUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
@@ -8,7 +8,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "78":
                     DisassemblyHelper.SetDisassemblyString("JS [{0}]", DisassemblyHelper.OperandType.J8);

@@ -24,8 +24,6 @@ namespace SaturnBuilder
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            AddressManager addressManager = new AddressManager();
-
             List<Instruction> instructions = new List<Instruction>()
             {
                 new Instruction(OpcodeType.MOV, R32.EAX, new PTRC(DataType.DWORD, 0x402000)),
@@ -39,10 +37,10 @@ namespace SaturnBuilder
 
             List<Variable> variables = new List<Variable>();
 
-            addressManager.AddVariable(DataType.BYTE, "var1", 12);
-            addressManager.AddVariable(DataType.WORD, "var2", 1234);
-            addressManager.AddVariable(DataType.DWORD, "var3", 12345678);
-            addressManager.AddVariable(DataType.QWORD, "var4", 12345678901234);
+            AddressManager.AddVariable(DataType.BYTE, "var1", 12);
+            AddressManager.AddVariable(DataType.WORD, "var2", 1234);
+            AddressManager.AddVariable(DataType.DWORD, "var3", 12345678);
+            AddressManager.AddVariable(DataType.QWORD, "var4", 12345678901234);
 
             var assemblyBytes = AssembleHelper.BuildAssemblyBytes(instructions);
             var dataBytes = AssembleHelper.BuildDataBytes(variables);

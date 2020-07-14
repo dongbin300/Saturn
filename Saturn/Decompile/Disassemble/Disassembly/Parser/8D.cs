@@ -1,4 +1,4 @@
-﻿using System;
+﻿using static Saturn.Util.StringUtil;
 
 namespace Saturn.Decompile.Disassemble.Disassembly.Parser
 {
@@ -8,7 +8,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
         {
             DisassemblyHelper.GetOpcode();
 
-            switch (Util.GetHexString(DisassemblyHelper.opcode2))
+            switch (GetHexString(DisassemblyHelper.opcode2))
             {
                 case "15":
                     DisassemblyHelper.SetDisassemblyString("LEA EDX, DWORD PTR DS:[{0}]", DisassemblyHelper.OperandType.LE32);
@@ -21,7 +21,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "4C":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "24":
                             DisassemblyHelper.SetDisassemblyString("LEA ECX, DWORD PTR SS:[ESP{0}]", DisassemblyHelper.OperandType.SH8);
@@ -39,7 +39,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "8C":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "05":
                             DisassemblyHelper.SetDisassemblyString("LEA ECX, DWORD PTR SS:[EBP+EAX{0}]", DisassemblyHelper.OperandType.SH32);
@@ -57,7 +57,7 @@ namespace Saturn.Decompile.Disassemble.Disassembly.Parser
                 case "94":
                     DisassemblyHelper.GetOpcode();
 
-                    switch (Util.GetHexString(DisassemblyHelper.opcode3))
+                    switch (GetHexString(DisassemblyHelper.opcode3))
                     {
                         case "0D":
                             DisassemblyHelper.SetDisassemblyString("LEA EDX, DWORD PTR SS:[EBP+ECX{0}]", DisassemblyHelper.OperandType.SH32);

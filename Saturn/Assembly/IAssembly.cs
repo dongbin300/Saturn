@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static Saturn.Util;
+using static Saturn.Util.StringUtil;
+using static Saturn.Util.ByteUtil;
 
 namespace Saturn.Assembly
 {
@@ -398,5 +399,36 @@ namespace Saturn.Assembly
                 return GetHexString(ReverseBytes(BitConverter.GetBytes(Value)));
             }
         }
+
+        /// <summary>
+        /// loop:
+        ///     ...
+        ///     ...
+        ///     ...
+        /// </summary>
+        const string SITE_TOKEN = ":";
+
+        /// <summary>
+        /// PRCD loop
+        ///     ...
+        ///     ...
+        ///     ...
+        /// PRCD END
+        /// </summary>
+        const string PROCEDURE_KEYWORD = "PRCD";
+
+        /// <summary>
+        /// PRCD loop
+        ///     ...
+        ///     ...
+        ///     ...
+        /// PRCD END
+        /// </summary>
+        const string PROCEDURE_END_KEYWORD = "END";
+
+        /// <summary>
+        /// Entry Procedure Name
+        /// </summary>
+        const string ENTRY_PROCEDURE_NAME = "MAIN";
     }
 }

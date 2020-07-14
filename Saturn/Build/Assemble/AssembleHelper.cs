@@ -1,8 +1,7 @@
 ﻿using Saturn.Assembly;
-using Saturn.MachineCode;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using static Saturn.Util.ByteUtil;
 
 namespace Saturn.Build.Assemble
 {
@@ -26,7 +25,7 @@ namespace Saturn.Build.Assemble
                     throw new Exception($"[AssemblyParseError][{i.String}]");
                 }
 
-                Util.ConcatenateBytes(ref assemblyBytes, machineCode.Bytes);
+                ConcatenateBytes(ref assemblyBytes, machineCode.Bytes);
             }
 
             return assemblyBytes.ToArray();
@@ -38,7 +37,7 @@ namespace Saturn.Build.Assemble
 
             foreach (Variable v in variables)
             {
-                Util.ConcatenateBytes(ref dataBytes, v.Value);
+                ConcatenateBytes(ref dataBytes, v.Value);
             }
 
             return dataBytes.ToArray();

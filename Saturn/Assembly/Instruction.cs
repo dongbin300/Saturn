@@ -1,9 +1,7 @@
 ﻿using Saturn.MachineCode;
 using System;
-using System.Reflection.Emit;
 using System.Text;
 using static Saturn.Assembly.IAssembly;
-using static Saturn.Util;
 
 namespace Saturn.Assembly
 {
@@ -180,6 +178,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x1205, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x10C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -195,6 +194,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1205), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x10C0)),
                             _ => null
                         }
                     },
@@ -213,6 +213,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x661305, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6611C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -228,6 +229,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661305), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6611C0)),
                             _ => null
                         }
                     },
@@ -246,6 +248,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x1305, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x11C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -261,6 +264,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1305), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x11C0)),
                             _ => null
                         }
                     },
@@ -327,6 +331,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x0205, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x00C0), null, null, 2),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -342,6 +347,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0205), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x00C0), null, null, 2),
                             _ => null
                         }
                     },
@@ -360,6 +366,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x660305, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6601C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -375,6 +382,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x660305), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6601C0)),
                             _ => null
                         }
                     },
@@ -393,6 +401,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x0305, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x01C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -408,6 +417,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0305), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x01C0)),
                             _ => null
                         }
                     },
@@ -460,6 +470,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x2205, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x20C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -471,6 +482,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2205), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x20C0)),
                             _ => null
                         }
                     },
@@ -486,6 +498,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x662305, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6621C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -498,6 +511,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x662305), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6621C0)),
                             _ => null
                         }
                     },
@@ -513,6 +527,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x2305, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x21C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -525,6 +540,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2305), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x21C0)),
                             _ => null
                         }
                     },
@@ -547,6 +563,7 @@ namespace Saturn.Assembly
                 #region CALL
                 OpcodeType.CALL => Operand1 switch
                 {
+                    int x => new AssemblyHex(0xE8, x),
                     PTR32 _ => new AssemblyHex(Formalize(CodeFormat.One, 0xFF10)),
                     _ => null
                 },
@@ -613,6 +630,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x3A05, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x38C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -624,6 +642,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3A05), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x38C0)),
                             _ => null
                         },
                     },
@@ -639,6 +658,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x663B05, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6639C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -651,6 +671,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x663B05), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6639C0)),
                             _ => null
                         },
                     },
@@ -666,6 +687,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x3B05, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x39C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -678,6 +700,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3B05), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x39C0)),
                             _ => null
                         },
                     },
@@ -1105,6 +1128,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0xA0, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x88C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1120,6 +1144,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8A05), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x88C0)),
                             _ => null
                         }
                     },
@@ -1138,6 +1163,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x66A1, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6689C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1153,6 +1179,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x668B05), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6689C0)),
                             _ => null
                         }
                     },
@@ -1171,6 +1198,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0xA1, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x89C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1186,6 +1214,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x8B05), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x89C0)),
                             _ => null
                         }
                     },
@@ -1281,6 +1310,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x0A05, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x08C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1292,6 +1322,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0A05), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x08C0)),
                             _ => null
                         }
                     },
@@ -1307,6 +1338,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x660B05, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6609C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1319,6 +1351,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x660B05), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6609C0)),
                             _ => null
                         }
                     },
@@ -1334,6 +1367,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x0B05, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x09C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1346,6 +1380,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x0B05), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x09C0)),
                             _ => null
                         }
                     },
@@ -1613,6 +1648,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x1A05, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x18C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1628,6 +1664,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1A05), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x18C0)),
                             _ => null
                         }
                     },
@@ -1646,6 +1683,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x661B05, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6619C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1661,6 +1699,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x661B05), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6619C0)),
                             _ => null
                         }
                     },
@@ -1679,6 +1718,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x1B05, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x19C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1694,6 +1734,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x1B05), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x19C0)),
                             _ => null
                         }
                     },
@@ -1856,6 +1897,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x2A05, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x28C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1871,6 +1913,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2A05), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x28C0)),
                             _ => null
                         }
                     },
@@ -1889,6 +1932,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x662B05, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6629C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1904,6 +1948,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x662B05), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6629C0)),
                             _ => null
                         }
                     },
@@ -1922,6 +1967,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x2B05, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x29C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -1937,6 +1983,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x2B05), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x29C0)),
                             _ => null
                         }
                     },
@@ -2062,6 +2109,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(0x3205, x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x30C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -2077,6 +2125,7 @@ namespace Saturn.Assembly
                                 DataType.BYTE => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3205), x.Value),
                                 _ => null
                             },
+                            R8 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x30C0)),
                             _ => null
                         }
                     },
@@ -2095,6 +2144,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(0x663305, x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6631C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -2110,6 +2160,7 @@ namespace Saturn.Assembly
                                 DataType.WORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x663305), x.Value),
                                 _ => null
                             },
+                            R16 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x6631C0)),
                             _ => null
                         }
                     },
@@ -2128,6 +2179,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(0x3305, x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x31C0)),
                             _ => null
                         },
                         _ => Operand2 switch
@@ -2143,6 +2195,7 @@ namespace Saturn.Assembly
                                 DataType.DWORD => new AssemblyHex(Formalize(CodeFormat.JustOne, 0x3305), x.Value),
                                 _ => null
                             },
+                            R32 _ => new AssemblyHex(Formalize(CodeFormat.TwoOne, 0x31C0)),
                             _ => null
                         }
                     },

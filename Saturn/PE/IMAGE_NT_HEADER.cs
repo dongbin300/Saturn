@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Saturn.Util;
+using static Saturn.Util.StringUtil;
 
 namespace Saturn.PE
 {
