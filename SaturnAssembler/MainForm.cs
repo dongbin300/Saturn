@@ -58,7 +58,7 @@ namespace SaturnAssembler
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.R64)).ToList());
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.S)).ToList());
             richTextBox.Settings.Keywords.AddRange(Enum.GetNames(typeof(IAssembly.PTR8)).ToList());
-            richTextBox.Settings.Comment = ";";
+            richTextBox.Settings.Comment = IAssembly.COMMENT_TOKEN;
 
             richTextBox.Settings.KeywordColor = Color.DeepSkyBlue;
             richTextBox.Settings.StringColor = Color.OrangeRed;

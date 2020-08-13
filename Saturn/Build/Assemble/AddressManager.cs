@@ -198,15 +198,9 @@ namespace Saturn.Build.Assemble
             return procedure != null;
         }
 
-        public static byte GetJumpValue(Site site)
-        {
-            return (byte)(site.Address - TextSectionCurrentAddress - 2);
-        }
+        public static byte GetJumpValue(Site site) => (byte)(site.Address - TextSectionCurrentAddress - 2);
 
-        public static int GetCallValue(Procedure procedure)
-        {
-            return (int)(procedure.Address - TextSectionCurrentAddress - 5);
-        }
+        public static int GetCallValue(Procedure procedure) => (int)(procedure.Address - TextSectionCurrentAddress - 5);
 
         public static uint GetSectionRawSize(byte[] bytes) => SufficientValue((uint)bytes.Length, 9);
     }

@@ -430,5 +430,10 @@ namespace Saturn.Assembly
         /// Entry Procedure Name
         /// </summary>
         const string ENTRY_PROCEDURE_NAME = "MAIN";
+
+        /// <summary>
+        /// PRCD main ; This is main procedure.
+        /// </summary>
+        const string COMMENT_TOKEN = ";";
     }
 }

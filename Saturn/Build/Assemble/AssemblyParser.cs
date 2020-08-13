@@ -50,7 +50,7 @@ namespace Saturn.Build.Assemble
                 {
                     lineNumber++;
 
-                    string instructionTextExcludeComment = instructionText.Split(';')[0];
+                    string instructionTextExcludeComment = instructionText.Split(COMMENT_TOKEN)[0].Trim();
 
                     if (instructionTextExcludeComment == string.Empty) // All texts were comments
                     {
@@ -493,6 +493,10 @@ namespace Saturn.Build.Assemble
             {
                 result = Convert.ToByte(numericString, 16);
             }
+            else if (numericString.EndsWith("H"))
+            {
+                result = Convert.ToByte(numericString.Replace("H", ""), 16);
+            }
             else if (!byte.TryParse(numericString, out result))
             {
                 throw new Exception("[VariableParse] value range exceeded.");
@@ -509,6 +513,10 @@ namespace Saturn.Build.Assemble
             {
                 result = Convert.ToUInt16(numericString, 16);
             }
+            else if (numericString.EndsWith("H"))
+            {
+                result = Convert.ToUInt16(numericString.Replace("H", ""), 16);
+            }
             else if (!ushort.TryParse(numericString, out result))
             {
                 throw new Exception("[VariableParse] value range exceeded.");
@@ -524,6 +532,10 @@ namespace Saturn.Build.Assemble
             {
                 result = Convert.ToUInt32(numericString, 16);
             }
+            else if (numericString.EndsWith("H"))
+            {
+                result = Convert.ToUInt32(numericString.Replace("H", ""), 16);
+            }
             else if (!uint.TryParse(numericString, out result))
             {
                 throw new Exception("[VariableParse] value range exceeded.");
@@ -538,6 +550,10 @@ namespace Saturn.Build.Assemble
             if (numericString.StartsWith("0X"))
             {
                 result = Convert.ToUInt64(numericString, 16);
+            }
+            else if (numericString.EndsWith("H"))
+            {
+                result = Convert.ToUInt64(numericString.Replace("H", ""), 16);
             }
             else if (!ulong.TryParse(numericString, out result))
             {
