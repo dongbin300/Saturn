@@ -1,0 +1,23 @@
+TextSection VirtualSize > 200
+
+(Optional)SizeOfCode 200 -> 400
+(Text)SizeOfRawData 200 -> 400
+(Data)PointerToRawData 400 -> 600
+
+TextSection VirtualSize > 1000 = 144F
+
+(Optional)SizeOfCode 200 -> 1600
+(Optional)BaseOfData 2000 -> 3000
+(Optional)SizeofImage 3000 -> 4000
+(Text)SizeOfRawData 200 -> 1600
+(Data)RVA 2000 -> 3000
+(Data)PointerToRawData 400 -> 1800
+
+Optional에서
+SectionAlignment 1000 고정
+FileAlignment 200 고정
+
+TextSection VirtualSize를 tv라 함
+
+Optional
+SizeOfCode = tv / 

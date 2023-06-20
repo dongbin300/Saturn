@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33801.468
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaturnDecompiler", "SaturnDecompiler\SaturnDecompiler.csproj", "{26DC703D-C681-4104-97B0-B58C36EB53E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Saturn", "Saturn\Saturn.csproj", "{E9CC28D5-0B7B-4BD8-B522-550A6C66CDE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26DC703D-C681-4104-97B0-B58C36EB53E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26DC703D-C681-4104-97B0-B58C36EB53E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26DC703D-C681-4104-97B0-B58C36EB53E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26DC703D-C681-4104-97B0-B58C36EB53E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9CC28D5-0B7B-4BD8-B522-550A6C66CDE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9CC28D5-0B7B-4BD8-B522-550A6C66CDE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9CC28D5-0B7B-4BD8-B522-550A6C66CDE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9CC28D5-0B7B-4BD8-B522-550A6C66CDE2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {341A0D25-7BBE-408F-8076-C6144F764A52}
+	EndGlobalSection
+EndGlobal
